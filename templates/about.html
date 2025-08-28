@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-4">
+        <img class="img-fluid rounded-4 shadow-sm" src="https://avatars.githubusercontent.com/u/9919?s=200&v=4"
+            alt="avatar" />
+    </div>
+    <div class="col-md-8">
+        <h1 class="h3 mb-4">{{ t.MENU_ABOUT }}</h1>
+        <p class="text-secondary">من یک توسعه‌دهندهٔ پایتون و Flask هستم که به ساخت سرویس‌های سریع و تمیز علاقه‌مندم.
+        </p>
+
+
+        <hr class="my-4" />
+
+
+        <h2 class="h5 mb-3">تجربه کاری</h2>
+        <ul class="timeline list-unstyled">
+            {% for e in experiences %}
+            <li class="mb-4 fade-item">
+                <div class="fw-bold">{{ e.role }} – <span class="text-primary">{{ e.company }}</span></div>
+                <small class="text-secondary">{{ e.year }}</small>
+                <p class="mt-1 text-secondary">{{ e.desc }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+
+
+        <ul class="timeline list-unstyled">
+            {% for ed in education %}
+            <li class="mb-4 fade-item">
+                <div class="fw-bold">{{ ed.degree }} – <span class="text-primary">{{ ed.university }}</span></div>
+                <small class="text-secondary">{{ ed.year }}</small>
+                <p class="mt-1 text-secondary">{{ ed.desc }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

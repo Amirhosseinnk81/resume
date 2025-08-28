@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row align-items-center g-4">
+    <div class="col-lg-6">
+        <h1 class="display-5 fw-bold mb-3">سلام! من {{ NAME }} هستم</h1>
+        <p class="lead text-secondary mb-4">{{ TAGLINE }}</p>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            {% for s in skills %}
+            <span class="badge text-bg-secondary">{{ s }}</span>
+            {% endfor %}
+        </div>
+        <a class="btn btn-primary btn-lg" href="/projects">مشاهدهٔ پروژه‌ها</a>
+    </div>
+    <div class="col-lg-6">
+        <div class="ratio ratio-16x9 rounded-4 overflow-hidden shadow-sm">
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+
+<hr class="my-5" />
+
+
+<h2 class="h4 mb-3">آخرین پروژه‌ها</h2>
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for p in projects[:4] %}
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h3 class="h5 card-title">{{ p.title }}</h3>
+                <p class="card-text text-secondary">{{ p.desc }}</p>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for t in p.stack %}
+                    <span class="badge text-bg-light border">{{ t }}</span>
+                    {% endfor %}
+                </div>
+                <a class="stretched-link" href="{{ p.link }}" target="_blank" rel="noopener">مشاهده</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

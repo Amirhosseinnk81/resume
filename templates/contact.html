@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h3 mb-4">{{ t.CONTACT_TITLE }}</h1>
+<form method="post" class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">{{ t.CONTACT_NAME }}</label>
+        <input name="name" class="form-control" required />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">{{ t.CONTACT_EMAIL }}</label>
+        <input type="email" name="email" class="form-control" required />
+    </div>
+    <div class="col-12">
+        <label class="form-label">{{ t.CONTACT_MSG }}</label>
+        <textarea name="message" rows="5" class="form-control" required></textarea>
+    </div>
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">{{ t.CONTACT_SEND }}</button>
+        <button class="btn btn-outline-secondary" type="reset">{{ t.CONTACT_CLEAR }}</button>
+    </div>
+</form>
+<p class="text-secondary mt-3">پس از ارسال، پیام شما در فایل <code>data/messages.csv</code> ذخیره می‌شود.</p>
+{% endblock %}

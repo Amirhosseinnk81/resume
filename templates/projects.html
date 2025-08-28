@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h3 mb-4">پروژه‌ها</h1>
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for p in projects %}
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h3 class="h5 card-title">{{ p.title }}</h3>
+                <p class="card-text text-secondary">{{ p.desc }}</p>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for t in p.stack %}
+                    <span class="badge text-bg-light border">{{ t }}</span>
+                    {% endfor %}
+                </div>
+                <a class="stretched-link" href="{{ p.link }}" target="_blank" rel="noopener">مشاهده</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
