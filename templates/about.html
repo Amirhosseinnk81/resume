@@ -25,13 +25,33 @@
             {% endfor %}
         </ul>
 
-
+        <h2 class="h5 mb-3">تحصیلات</h2>
         <ul class="timeline list-unstyled">
             {% for ed in education %}
-            <li class="mb-4 fade-item">
+            <li class="mb-4 fade-item" data-aos="fade-up">
                 <div class="fw-bold">{{ ed.degree }} – <span class="text-primary">{{ ed.university }}</span></div>
                 <small class="text-secondary">{{ ed.year }}</small>
                 <p class="mt-1 text-secondary">{{ ed.desc }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<div class="h5 mb-3">
+    <div class="col-12">
+        <h4 class="mb-3">{{ t.MENU_SKILLS }}</h4>
+        <ul class="timeline list-unstyled">
+            {% for s in skills %}
+            <li class="mb-4 fade-item" data-aos="fade-up">
+                <div class="fw-bold">{{ s.name }}</div>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ s.level }}%">
+                        {{ s.level }}%
+                    </div>
+                </div>
             </li>
             {% endfor %}
         </ul>

@@ -55,7 +55,10 @@ SOCIALS = {
     "twitter": "https://x.com/yourname",
 }
 SKILLS = [
-"Python", "Flask", "SQL", "Git", "Linux", "Docker"
+{"name": "Python", "level": 65},
+{"name": "Flask", "level": 35},
+{"name": "JavaScript", "level": 10},
+{"name": "HTML/CSS", "level": 50}
 ]
 PROJECTS = [
 {
@@ -134,7 +137,7 @@ def projects():
 
 @app.route("/about")
 def about():
-    return render_template("about.html", experiences=EXPERIENCES, education=EDUCATION)
+    return render_template("about.html", experiences=EXPERIENCES, education=EDUCATION, skills=SKILLS)
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
