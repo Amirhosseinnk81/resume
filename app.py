@@ -9,7 +9,7 @@ app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
 translations = {
 "fa": {
 "SITE_TITLE": "رزومهٔ من",
-"NAME": "نام شما",
+"NAME": "امیرحسین نعیمایی",
 "TAGLINE": "توسعه‌دهندهٔ بک‌اند | Flask | Python",
 "MENU_PROJECTS": "پروژه‌ها",
 "MENU_ABOUT": "درباره‌من",
@@ -17,17 +17,18 @@ translations = {
 "BTN_RESUME": "دانلود رزومه",
 "BTN_PROJECTS": "مشاهدهٔ پروژه‌ها",
 "CONTACT_TITLE": "تماس با من",
-"CONTACT_NAME": "نام",
-"CONTACT_EMAIL": "ایمیل",
+"CONTACT_NAME": "امیرحسین نعیمایی",
+"CONTACT_EMAIL": "amirhossein.naimaei81@gmail.com",
 "CONTACT_MSG": "پیام",
 "CONTACT_SEND": "ارسال",
 "CONTACT_CLEAR": "پاک کردن",
 "MSG_SUCCESS": "پیام شما با موفقیت ارسال شد!",
 "MSG_ERROR": "لطفاً همهٔ فیلدها را پر کنید.",
+"LOCATION" : "نوشهر",
 },
 "en": {
 "SITE_TITLE": "My Resume",
-"NAME": "Your Name",
+"NAME": "Amirhossein Naeimaei",
 "TAGLINE": "Backend Developer | Flask | Python",
 "MENU_PROJECTS": "Projects",
 "MENU_ABOUT": "About",
@@ -35,24 +36,35 @@ translations = {
 "BTN_RESUME": "Download Resume",
 "BTN_PROJECTS": "See Projects",
 "CONTACT_TITLE": "Contact Me",
-"CONTACT_NAME": "Name",
-"CONTACT_EMAIL": "Email",
+"CONTACT_NAME": "Amirhossein Naeimaei",
+"CONTACT_EMAIL": "amirhossein.naimaei81@gmail.com",
 "CONTACT_MSG": "Message",
 "CONTACT_SEND": "Send",
 "CONTACT_CLEAR": "Clear",
 "MSG_SUCCESS": "Your message has been sent successfully!",
 "MSG_ERROR": "Please fill in all fields.",
+"LOCATION" : "Nowshahr",
 }
+}
+
+profile = {
+"name": "امیرحسین نعیمایی",
+"job": "توسعه‌دهنده بک‌اند (Python/Flask)",
+"location": "مازندران، ایران",
+"email": "amirhossein.naimaei81@gmail.com"
 }
 
 # تنظیمات ساده
 SITE_TITLE = "رزومهٔ من"
-NAME = "نام شما"
+NAME = "امیرحسین نعیمایی"
 TAGLINE = "توسعه‌دهندهٔ بک‌اند | Flask | Python"
+LOCATION = "نوشهر"
+CONTACT_EMAIL = "amirhossein.naimaei81@gmail.com"
+
 SOCIALS = {
-    "github": "https://github.com/yourname",
+    "github": "https://github.com/Amirhosseinnk81",
     "linkedin": "https://www.linkedin.com/in/yourname/",
-    "twitter": "https://x.com/yourname",
+    "twitter": "https://x.com/Amirnk_81",
 }
 SKILLS = [
 {"name": "Python", "level": 65},
@@ -128,7 +140,7 @@ def switch_lang(code):
 
 @app.route("/")    
 def home():
-    return render_template("index.html", skills=SKILLS, projects=PROJECTS)
+    return render_template("index.html", skills=SKILLS, projects=PROJECTS, profile=profile)
 
 @app.route("/projects")
 def projects():

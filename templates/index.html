@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row align-items-center g-4" data-aos="fade-up">
+<!-- <div class="row align-items-center g-4" data-aos="fade-up">
     <div class="col-lg-6">
         <h1 class="display-5 fw-bold mb-3">سلام! من {{ NAME }} هستم</h1>
         <p class="lead text-secondary mb-4">{{ TAGLINE }}</p>
@@ -16,8 +16,23 @@
             <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video" allowfullscreen></iframe>
         </div>
     </div>
-</div>
+</div> -->
 
+
+<div class="d-flex justify-content-center">
+    <div class="card shadow-lg p-4 text-center fade-item" data-aos="zoom-in" style="max-width: 400px;">
+        <img src="/static/images/profile.jpg" alt="Profile" class="rounded-circle mx-auto mb-3"
+            style="width: 120px; height: 120px; object-fit: cover;">
+        <h2 class="h4 fw-bold">{{ profile.name }}</h2>
+        <p class="text-secondary mb-1">{{ profile.job }}</p>
+        <p class="text-muted small">📍 {{ profile.location }}</p>
+        <p class="text-muted small">✉️ <a href="mailto:{{ profile.email }}">{{ profile.email }}</a></p>
+        <div class="mt-3">
+            <a href="/about" class="btn btn-primary btn-sm">{{ t.MENU_ABOUT }}</a>
+            <a href="/projects" class="btn btn-outline-primary btn-sm">{{ t.MENU_PROJECTS }}</a>
+        </div>
+    </div>
+</div>
 
 <hr class="my-5" />
 
