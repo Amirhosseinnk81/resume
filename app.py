@@ -1,9 +1,22 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, session
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, session , send_file
 from datetime import datetime
+from flask_mail import Mail, Message
+from resume_generator import generate_resume
+
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'amirhossein.naimaei81@gmail.com'     # ایمیل خودت
+app.config['MAIL_PASSWORD'] = 'nuaa kqmd xqmo xrwp'        # پسورد اپ (نه رمز اصلی!)
+app.config['MAIL_DEFAULT_SENDER'] = 'your_email@gmail.com'
+
+mail = Mail(app)
+
 
 # داده‌های دوزبانه
 translations = {
@@ -17,8 +30,8 @@ translations = {
 "BTN_RESUME": "دانلود رزومه",
 "BTN_PROJECTS": "مشاهدهٔ پروژه‌ها",
 "CONTACT_TITLE": "تماس با من",
-"CONTACT_NAME": "امیرحسین نعیمایی",
-"CONTACT_EMAIL": "amirhossein.naimaei81@gmail.com",
+"CONTACT_NAME": "اسم",
+"CONTACT_EMAIL": "ایمیل",
 "CONTACT_MSG": "پیام",
 "CONTACT_SEND": "ارسال",
 "CONTACT_CLEAR": "پاک کردن",
@@ -36,8 +49,8 @@ translations = {
 "BTN_RESUME": "Download Resume",
 "BTN_PROJECTS": "See Projects",
 "CONTACT_TITLE": "Contact Me",
-"CONTACT_NAME": "Amirhossein Naeimaei",
-"CONTACT_EMAIL": "amirhossein.naimaei81@gmail.com",
+"CONTACT_NAME": "name",
+"CONTACT_EMAIL": "E-mail",
 "CONTACT_MSG": "Message",
 "CONTACT_SEND": "Send",
 "CONTACT_CLEAR": "Clear",
@@ -157,22 +170,34 @@ def contact():
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
         message = request.form.get("message", "").strip()
+        
         if not name or not email or not message:
             flash("لطفاً همهٔ فیلدها را پر کنید.", "danger")
             return redirect(url_for("contact"))
-        # ذخیرهٔ سادهٔ پیام‌ها در یک فایل CSV (قابل جایگزینی با ایمیل/دیتابیس)
+
+        # ذخیره در فایل CSV
         os.makedirs("data", exist_ok=True)
         with open("data/messages.csv", "a", encoding="utf-8") as f:
             f.write(f"{datetime.now().isoformat()},{name},{email},{message}\n")
+
+        # ارسال ایمیل
+        msg = Message(
+            subject=f"پیام جدید از {name}",
+            recipients=["barokfinancial@gmail.com"],  # جایی که می‌خوای ایمیل بیاد
+            body=f"From: {name} <{email}>\n\n{message}"
+        )
+        mail.send(msg)
+
         flash("پیام شما با موفقیت ارسال شد!", "success")
         return redirect(url_for("contact"))
+
     return render_template("contact.html")
 
 @app.route('/download/resume')
-def download_resume():
-    # فایل resume.pdf را داخل static/files قرار دهید
-    directory = os.path.join(app.root_path, 'static', 'files')
-    return send_from_directory(directory, 'resume.pdf', as_attachment=True)
+def download_resume():  
+    # نمونه: استفاده از متغیرهایی که در اپ تعریف کردی
+    filename = generate_resume(profile, EXPERIENCES, EDUCATION, SKILLS, filename="static/files/resume.pdf")
+    return send_file(filename, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
