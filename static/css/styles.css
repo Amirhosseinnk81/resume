@@ -116,3 +116,55 @@ color: var(--color-primary);
 footer {
 border-top: 2px solid var(--color-accent);
 }
+/* --- Navbar --- */
+.navbar {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 0.8rem 1rem;
+  transition: padding 0.3s ease, background 0.3s ease;
+}
+
+/* جمع‌تر شدن navbar هنگام اسکرول */
+.navbar.shrink {
+  padding: 0.4rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* لینک‌ها */
+.navbar .nav-link {
+  position: relative;
+  font-weight: 500;
+  color: var(--fg);
+  margin: 0 0.4rem;
+  transition: color 0.3s ease;
+}
+.navbar .nav-link:hover {
+  color: var(--color-primary);
+}
+
+/* افکت خط زیر لینک */
+.navbar .nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--color-accent);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+.navbar .nav-link:hover::after {
+  width: 60%;
+}
+
+/* دکمه‌ها سمت راست */
+.navbar .btn {
+  border-radius: 50px;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+}
+.navbar .btn:hover {
+  transform: translateY(-2px);
+}

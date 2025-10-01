@@ -41,11 +41,13 @@
     }
 
     footer a {
-  transition: color 0.3s ease;
-}
-footer a:hover {
-  color: #0d6efd; /* رنگ آبی بوت‌استرپ برای هاور */
-}
+        transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+        color: #0d6efd;
+        /* رنگ آبی بوت‌استرپ برای هاور */
+    }
 </style>
 
 <body>
@@ -58,11 +60,16 @@ footer a:hover {
                     <li class="nav-item"><a class="nav-link" href="/about">{{ t.MENU_ABOUT }}</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact">{{ t.MENU_CONTACT }}</a></li>
                 </ul>
-                <div class="d-flex gap-2">
-                    <button id="themeToggle" class="btn btn-sm btn-outline-secondary" type="button">🌞</button>
-                    <a class="btn btn-sm btn-outline-secondary" href="/lang/fa">FA</a>
-                    <a class="btn btn-sm btn-outline-secondary" href="/lang/en">EN</a>
-                    <a class="btn btn-primary" href="{{ url_for('download_resume') }}" class="btn btn-primary" target="_blank" class="btn btn-outline-primary">{{ t.BTN_RESUME }}</a>
+                <div class="btn-group gap-0.5"role="group" aria-label="Basic example">
+                    <button id="themeToggle" class="btn btn-sm btn-primary" type="button">🌞</button>
+                    <a href="{{ url_for('toggle_lang') }}" class="btn btn-primary btn-sm">
+                        {{ 'EN' if session.get('lang') == 'fa' else 'FA' }}
+                    </a>
+                    <a href="{{ url_for('static', filename='files/myresume.pdf') }}" class="btn btn-primary"
+                        target="_blank">
+                        دانلود رزومه PDF
+                    </a>
+
                 </div>
             </div>
         </div>
@@ -89,10 +96,14 @@ footer a:hover {
         <div class="container d-flex flex-wrap gap-3 align-items-center justify-content-between">
             <small>© {{ year }} {{ NAME }} – تمام حقوق محفوظ است.</small>
             <div class="d-flex gap-3">
-                {% if SOCIALS.github %}<a href="{{ SOCIALS.github }}" target="_blank" class="text-dark mx-2" rel="noopener"><i class="fab fa-github fa-lg"></i></a>{% endif%}
-                {% if SOCIALS.linkedin %}<a href="{{ SOCIALS.linkedin }}" target="_blank" class="text-dark mx-2" rel="noopener"><i class="fab fa-linkedin fa-lg"></i></a>{%endif %}
-                {% if SOCIALS.twitter %}<a href="{{ SOCIALS.twitter }}" target="_blank" class="text-dark mx-2" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>{% endif %}
-                      <a href="https://t.me/amirhossein_nk81" target="_blank" class="text-dark mx-2"><i class="fab fa-telegram fa-lg"></i></a>
+                {% if SOCIALS.github %}<a href="{{ SOCIALS.github }}" target="_blank" class="text-dark mx-2"
+                    rel="noopener"><i class="fab fa-github fa-lg"></i></a>{% endif%}
+                {% if SOCIALS.linkedin %}<a href="{{ SOCIALS.linkedin }}" target="_blank" class="text-dark mx-2"
+                    rel="noopener"><i class="fab fa-linkedin fa-lg"></i></a>{%endif %}
+                {% if SOCIALS.twitter %}<a href="{{ SOCIALS.twitter }}" target="_blank" class="text-dark mx-2"
+                    rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>{% endif %}
+                <a href="https://t.me/amirhossein_nk81" target="_blank" class="text-dark mx-2"><i
+                        class="fab fa-telegram fa-lg"></i></a>
             </div>
         </div>
     </footer>

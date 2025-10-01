@@ -2,7 +2,6 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, session , send_file
 from datetime import datetime
 from flask_mail import Mail, Message
-from resume_generator import generate_resume
 
 
 app = Flask(__name__)
@@ -193,11 +192,12 @@ def contact():
 
     return render_template("contact.html")
 
-@app.route('/download/resume')
-def download_resume():  
-    # نمونه: استفاده از متغیرهایی که در اپ تعریف کردی
-    filename = generate_resume(profile, EXPERIENCES, EDUCATION, SKILLS, filename="static/files/resume.pdf")
-    return send_file(filename, as_attachment=True)
+@app.route("/toggle-lang")
+def toggle_lang():
+    current = session.get("lang", "fa")
+    session["lang"] = "en" if current == "fa" else "fa"
+    return redirect(request.referrer or url_for("index"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
