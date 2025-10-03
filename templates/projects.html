@@ -9,7 +9,8 @@
 {% block tw_desc %}مشاهده پروژه‌های طراحی وب و نرم‌افزار انجام‌شده توسط من.{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4">پروژه‌ها</h1>
+<h1 style="font-size: 28px;">{{ t.MENU_PROJECTS }}</h1>
+<h2>{{ t.PAGE_PROJECTS_SUBTITLE }}</h2>
 <div class="row row-cols-1 row-cols-md-2 g-4" data-aos="fade-up">
     {% for p in projects %}
     <div class="col">

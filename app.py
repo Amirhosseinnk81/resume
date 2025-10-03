@@ -60,7 +60,7 @@ translations = {
 }
 
 profile = {
-"name": "امیرحسین نعیمایی",
+"name": "امیرحسین نعیمائی",
 "job": "توسعه‌دهنده بک‌اند (Python/Flask)",
 "location": "مازندران، ایران",
 "email": "amirhossein.naimaei81@gmail.com"

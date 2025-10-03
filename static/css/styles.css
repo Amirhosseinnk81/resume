@@ -10,6 +10,7 @@
 }
 
 body[data-theme='dark'] {
+padding-top: 70px; /* ارتفاع منو */
 --bg: #121212;
 --fg: #f1f1f1;
 --card-bg: #1e1e1e;
@@ -19,10 +20,29 @@ body[data-theme='dark'] {
 }
 
 body {
+padding-top: 70px; /* ارتفاع منو */
 background: var(--bg);
 font-family: var(--font-main);
 color: var(--fg);
 transition: background 0.3s, color 0.3s;
+}
+/* حالت عادی (روشن) */
+.navbar-light .navbar-nav .nav-link {
+  color: #333; /* متن تیره */
+}
+
+/* حالت دارک */
+body.dark-mode .navbar {
+  background-color: #222 !important;
+}
+
+body.dark-mode .navbar .navbar-brand,
+body.dark-mode .navbar .nav-link {
+  color: #f1f1f1 !important;  /* سفید برای دیده شدن */
+}
+
+body.dark-mode .navbar .nav-link:hover {
+  color: #ffd700 !important; /* رنگ طلایی برای hover */
 }
 
 

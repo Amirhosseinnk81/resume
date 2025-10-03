@@ -70,29 +70,40 @@
 </style>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm fixed-top">
         <div class="container">
+            <!-- برند -->
             <a class="navbar-brand fw-bold" href="/">{{ t.NAME }}</a>
-            <div class="collapse navbar-collapse" id="nav">
+
+            <!-- دکمه منو برای موبایل -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- منو -->
+            <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link" href="/projects">{{ t.MENU_PROJECTS }}</a></li>
                     <li class="nav-item"><a class="nav-link" href="/about">{{ t.MENU_ABOUT }}</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact">{{ t.MENU_CONTACT }}</a></li>
                 </ul>
-                <div class="btn-group gap-0.5" role="group" aria-label="Basic example">
-                    <button id="themeToggle" class="btn btn-sm btn-primary" type="button">🌞</button>
-                    <a href="{{ url_for('toggle_lang') }}" class="btn btn-primary btn-sm">
+
+                <!-- دکمه‌ها -->
+                <div class="d-flex gap-2 mt-2 mt-lg-0">
+                    <button id="themeToggle" class="btn btn-sm btn-outline-secondary" type="button">🌞</button>
+                    <a href="{{ url_for('toggle_lang') }}" class="btn btn-outline-primary btn-sm">
                         {{ 'EN' if session.get('lang') == 'fa' else 'FA' }}
                     </a>
-                    <a href="{{ url_for('static', filename='files/myresume.pdf') }}" class="btn btn-primary"
+                    <a href="{{ url_for('static', filename='files/myresume.pdf') }}" class="btn btn-primary btn-sm"
                         target="_blank">
-                        دانلود رزومه PDF
+                        📄 {{ t.DOWNLOAD_RESUME if t.DOWNLOAD_RESUME else "رزومه" }}
                     </a>
-
                 </div>
             </div>
         </div>
     </nav>
+
 
 
     <main class="py-5">
