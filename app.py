@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session 
 from datetime import datetime
 from flask_mail import Mail, Message
+from flask import send_from_directory
 
 
 app = Flask(__name__)

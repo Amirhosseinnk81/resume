@@ -95,7 +95,7 @@
                     <a href="{{ url_for('toggle_lang') }}" class="btn btn-outline-primary btn-sm">
                         {{ 'EN' if session.get('lang') == 'fa' else 'FA' }}
                     </a>
-                    <a href="{{ url_for('static', filename='files/myresume.pdf') }}" class="btn btn-primary btn-sm"
+                    <a href="{{ url_for('static', filename='files/MyResume.pdf') }}" class="btn btn-primary btn-sm"
                         target="_blank">
                         📄 {{ t.DOWNLOAD_RESUME if t.DOWNLOAD_RESUME else "رزومه" }}
                     </a>
