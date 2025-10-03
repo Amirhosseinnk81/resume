@@ -1,4 +1,13 @@
 {% extends 'base.html' %}
+{% block title %}امیرحسین نعیمائی | صفحه اصلی{% endblock %}
+{% block meta_description %}رزومه شخصی من شامل معرفی، پروژه‌ها، مهارت‌ها و راه‌های تماس.{% endblock %}
+
+{% block og_title %}رزومه من{% endblock %}
+{% block og_desc %}معرفی من، پروژه‌ها و مهارت‌های برنامه‌نویسی و طراحی وب.{% endblock %}
+
+{% block tw_title %}رزومه من{% endblock %}
+{% block tw_desc %}معرفی من، پروژه‌ها و مهارت‌های برنامه‌نویسی و طراحی وب.{% endblock %}
+
 {% block content %}
 <!-- <div class="row align-items-center g-4" data-aos="fade-up">
     <div class="col-lg-6">
@@ -21,7 +30,7 @@
 
 <div class="d-flex justify-content-center">
     <div class="card shadow-lg p-4 text-center fade-item" data-aos="zoom-in" style="max-width: 400px;">
-        <img src="/static/images/profile.jpg" alt="Profile" class="rounded-circle mx-auto mb-3"
+        <img src="/static/images/profile.jpg" alt="امیرحسین نعیمایی - برنامه‌نویس وب" class="rounded-circle mx-auto mb-3"
             style="width: 120px; height: 120px; object-fit: cover;">
         <h2 class="h4 fw-bold">{{ profile.name }}</h2>
         <p class="text-secondary mb-1">{{ profile.job }}</p>

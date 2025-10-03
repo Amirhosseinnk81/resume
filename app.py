@@ -21,7 +21,7 @@ mail = Mail(app)
 translations = {
 "fa": {
 "SITE_TITLE": "رزومهٔ من",
-"NAME": "امیرحسین نعیمایی",
+"NAME": "امیرحسین نعیمائی",
 "TAGLINE": "توسعه‌دهندهٔ بک‌اند | Flask | Python",
 "MENU_PROJECTS": "پروژه‌ها",
 "MENU_ABOUT": "درباره‌من",
@@ -68,7 +68,7 @@ profile = {
 
 # تنظیمات ساده
 SITE_TITLE = "رزومهٔ من"
-NAME = "امیرحسین نعیمایی"
+NAME = "امیرحسین نعیمائی"
 TAGLINE = "توسعه‌دهندهٔ بک‌اند | Flask | Python"
 LOCATION = "نوشهر"
 CONTACT_EMAIL = "amirhossein.naimaei81@gmail.com"
