@@ -199,6 +199,9 @@ def toggle_lang():
     session["lang"] = "en" if current == "fa" else "fa"
     return redirect(request.referrer or url_for("index"))
 
+@app.route("/resume")
+def download_resume():
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), "myresume.pdf", as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
