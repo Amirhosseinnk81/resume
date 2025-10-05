@@ -1,7 +1,7 @@
-from flask_sqlalchemy import SQLAlchemy
+from app import db
 from datetime import datetime
 
-db = SQLAlchemy()
+
 
 # مدل پروژه
 class Project(db.Model):
@@ -63,3 +63,4 @@ class Education(db.Model):
 
     def __repr__(self):
         return f"<Education {self.degree} at {self.university}>"
+    
