@@ -12,18 +12,16 @@
 <h1 style="font-size: 28px;">{{ t.MENU_PROJECTS }}</h1>
 <h2>{{ t.PAGE_PROJECTS_SUBTITLE }}</h2>
 <div class="row row-cols-1 row-cols-md-2 g-4" data-aos="fade-up">
-    {% for p in projects %}
+    {% for project in projects %}
     <div class="col">
         <div class="card h-100 shadow-sm">
             <div class="card-body">
-                <h3 class="h5 card-title">{{ p.title }}</h3>
-                <p class="card-text text-secondary">{{ p.desc }}</p>
+                <h3 class="h5 card-title">{{ project.title }}</h3>
+                <p class="card-text text-secondary">{{ project.short_description }}</p>
                 <div class="d-flex flex-wrap gap-2 mb-3">
-                    {% for t in p.stack %}
-                    <span class="badge text-bg-light border">{{ t }}</span>
-                    {% endfor %}
+                    <span class="badge text-bg-light border">{{ project.stack }}</span>
                 </div>
-                <a class="stretched-link" href="{{ p.link }}" target="_blank" rel="noopener">مشاهده</a>
+                <a class="stretched-link" href="{{ project.demo_link }}" target="_blank" rel="noopener">مشاهده</a>
             </div>
         </div>
     </div>

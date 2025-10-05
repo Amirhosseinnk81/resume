@@ -3,10 +3,41 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from datetime import datetime
 from flask_mail import Mail, Message
 from flask import send_from_directory
+from models import db, Project,About, Skill, Experience, Education
+from flask_admin import Admin, expose
+from flask_admin.contrib.sqla import ModelView
+from flask_migrate import Migrate
 
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///portfolio.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
+
+db.init_app(app)
+migrate = Migrate(app, db)
+
+with app.app_context():
+    db.create_all()  # ایجاد جدول‌ها در دیتابیس
+
+
+# کلاس امن برای دسترسی به پنل
+class SecureModelView(ModelView):
+    def is_accessible(self):
+        # فقط وقتی session فعال باشه
+        return True  # فعلاً True بذار، بعداً می‌تونیم با لاگین تنظیمش کنیم
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('index'))
+
+admin = Admin(app, name='پنل مدیریت', template_mode='bootstrap4')
+# افزودن مدل‌ها به پنل
+admin.add_view(SecureModelView(Project, db.session))
+admin.add_view(SecureModelView(About, db.session))
+admin.add_view(SecureModelView(Skill, db.session))
+admin.add_view(SecureModelView(Experience, db.session))
+admin.add_view(SecureModelView(Education, db.session))
+
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -153,19 +184,33 @@ def switch_lang(code):
 
 @app.route("/")    
 def home():
-    return render_template("index.html", skills=SKILLS, projects=PROJECTS, profile=profile)
+    projects = Project.query.all()
+    abouts = About.query.all()
+    skills = Skill.query.all()
+    experiences = Experience.query.all()
+    education_list = Education.query.all()
+
+    return render_template("index.html", projects=projects, skills=skills, abouts=abouts, experiences=experiences, education_list=education_list)
 
 @app.route("/projects")
 def projects():
-    return render_template("projects.html", projects=PROJECTS)
+    projects = Project.query.all()
+
+    return render_template("projects.html",projects=projects,)
 
 
 @app.route("/about")
 def about():
-    return render_template("about.html", experiences=EXPERIENCES, education=EDUCATION, skills=SKILLS)
+    abouts = Project.query.all()
+    skills = Skill.query.all()
+    experiences = Experience.query.all()
+    education_list = Education.query.all()
+
+    return render_template("about.html",skills=skills, abouts=abouts, experiences=experiences, education_list=education_list)
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
+    abouts = Project.query.all()
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
@@ -191,7 +236,7 @@ def contact():
         flash("پیام شما با موفقیت ارسال شد!", "success")
         return redirect(url_for("contact"))
 
-    return render_template("contact.html")
+    return render_template("contact.html",abouts=abouts,)
 
 @app.route("/toggle-lang")
 def toggle_lang():

@@ -24,24 +24,24 @@
         <hr class="my-4" />
 
 
-        <h2 class="h5 mb-3">تجربه کاری</h2>
+        <h2 style="font-size: 26px;" class="h5 mb-3">تجربه کاری</h2>
         <ul class="timeline list-unstyled">
-            {% for e in experiences %}
+            {% for exp in experiences %}
             <li class="mb-4 fade-item">
-                <div class="fw-bold">{{ e.role }} – <span class="text-primary">{{ e.company }}</span></div>
-                <small class="text-secondary">{{ e.year }}</small>
-                <p class="mt-1 text-secondary">{{ e.desc }}</p>
+                <div class="fw-bold">{{ exp.role }} – <span class="text-primary">{{ exp.company }}</span></div>
+                <small class="text-secondary">{{ exp.year }}</small>
+                <p class="mt-1 text-secondary">{{ exp.desc }}</p>
             </li>
             {% endfor %}
         </ul>
 
-        <h2 class="h5 mb-3">تحصیلات</h2>
+        <h2 style="font-size: 26px;" class="h5 mb-3">تحصیلات</h2>
         <ul class="timeline list-unstyled">
-            {% for ed in education %}
+            {% for edu in education_list %}
             <li class="mb-4 fade-item" data-aos="fade-up">
-                <div class="fw-bold">{{ ed.degree }} – <span class="text-primary">{{ ed.university }}</span></div>
-                <small class="text-secondary">{{ ed.year }}</small>
-                <p class="mt-1 text-secondary">{{ ed.desc }}</p>
+                <div class="fw-bold">{{ edu.degree }} – <span class="text-primary">{{ edu.university }}</span></div>
+                <small class="text-secondary">{{ edu.year }}</small>
+                <p class="mt-1 text-secondary">{{ edu.desc }}</p>
             </li>
             {% endfor %}
         </ul>
@@ -54,12 +54,12 @@
     <div class="col-12">
         <h4 class="mb-3">{{ t.MENU_SKILLS }}</h4>
         <ul class="timeline list-unstyled">
-            {% for s in skills %}
+            {% for skill in skills %}
             <li class="mb-4 fade-item" data-aos="fade-up">
-                <div class="fw-bold">{{ s.name }}</div>
+                <div class="fw-bold">{{ skill.name }}</div>
                 <div class="progress mt-2">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ s.level }}%">
-                        {{ s.level }}%
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ skill.level }}%">
+                        {{ skill.level }}%
                     </div>
                 </div>
             </li>
