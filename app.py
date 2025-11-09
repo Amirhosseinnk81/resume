@@ -13,7 +13,7 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'amirhossein.naimaei81@gmail.com'     # ایمیل خودت
 app.config['MAIL_PASSWORD'] = 'nuaa kqmd xqmo xrwp'        # پسورد اپ (نه رمز اصلی!)
-app.config['MAIL_DEFAULT_SENDER'] = 'your_email@gmail.com'
+app.config['MAIL_DEFAULT_SENDER'] = 'barokfinancial@gmail.com'
 
 mail = Mail(app)
 
@@ -80,37 +80,45 @@ SOCIALS = {
     "twitter": "https://x.com/Amirnk_81",
 }
 SKILLS = [
-{"name": "Python", "level": 65},
-{"name": "Flask", "level": 35},
+{"name": "Python", "level": 72},
+{"name": "Flask", "level": 55},
 {"name": "JavaScript", "level": 10},
-{"name": "HTML/CSS", "level": 50}
+{"name": "Django", "level": 53},
+{"name": "Git&Github", "level": 44},
+{"name": "HTML/CSS", "level": 43}
 ]
 PROJECTS = [
 {
-"title": "سامانهٔ رزرو هتل",
-"desc": "یک وب‌اپ با Flask و PostgreSQL برای مدیریت رزروها.",
-"stack": ["Flask", "PostgreSQL", "Bootstrap"],
-"link": "https://example.com/project1"
+"title": "وب‌سایت رزومه شخصی",
+"desc": "طراحی و توسعه وب‌سایت رزومه با Flask و HTML/CSS",
+"stack": ["Python, Flask, Jinja2, HTML, CSS, Bootstrap"],
+"link": "https://github.com/Amirhosseinnk81/resume"
 },
 {
-"title": "داشبورد مانیتورینگ شبکه",
-"desc": "نمایش وضعیت دستگاه‌ها و ترافیک با چارت‌های زنده.",
-"stack": ["FastAPI", "Redis", "WebSocket"],
-"link": "https://example.com/project2"
-}
+"title": "SW-backup – ابزار پشتیبان‌گیری پیکربندی سوئیچ‌ها",
+"desc": "ابزار پایتون برای اتصال به سوئیچ‌ها و دریافت پیکربندی آن‌ها به‌صورت خودکار",
+"stack": ["Python, Paramiko, Netmiko, Networking, Automation"],
+"link": "https://github.com/Amirhosseinnk81/SW-backup"
+},
+{
+"title": "وب‌سایت تخفیف",
+"desc": "پلتفرم آنلاین برای ارائه و مدیریت تخفیف‌های فروشگاه‌ها",
+"stack": ["Python, Flask, HTML, CSS, Bootstrap, SQLite"],
+"link": "https://github.com/Amirhosseinnk81/discount-araz"
+},
 ]
 
 EXPERIENCES = [
 {
-"year": "2023 - حالا",
+"year": "2021 - حالا",
 "role": "توسعه‌دهندهٔ بک‌اند",
-"company": "شرکت فناوری ایکس",
+"company": "فریلنسر",
 "desc": "توسعه و نگهداری سرویس‌های میکروسرویسی با Flask و Docker"
 },
 {
-"year": "2020 - 2023",
+"year": "2023 - حالا",
 "role": "کارشناس شبکه و IT",
-"company": "هتل Y",
+"company": "هتل آراز",
 "desc": "مدیریت شبکه، CCTV و سیستم‌های تلفنی"
 }
 ]
@@ -118,11 +126,29 @@ EXPERIENCES = [
 
 EDUCATION = [
 {
-"year": "2016 - 2020",
+"year": "2018 - 2021",
+"degree": "دیپلم ریاضی و فیزیک",
+"university": "مدرسه شهید مدرس",
+"desc": "تحصیل در رشته ریاضی و فیزیک"
+},
+{
+"year": "2021 - 2023",
+"degree": "فوق دیپلم نرم‌افزار",
+"university": "دانشگاه آزاد اسلامی واحد چالوس",
+"desc": "گرایش نرم‌افزار و برنامه‌نویسی"
+},
+{
+"year": "2023 - 2025",
 "degree": "کارشناسی مهندسی کامپیوتر",
-"university": "دانشگاه مثال",
+"university": "دانشگاه آزاد اسلامی واحد چالوس",
 "desc": "گرایش نرم‌افزار، پروژه پایانی در زمینهٔ یادگیری ماشین"
-}
+},
+{
+"year": "2025 - حالا",
+"degree": "کارشناسی ارشد مدیریت سیستم‌های اطلاعاتی",
+"university": "دانشگاه مارلیک نوشهر",
+"desc": "در حال حاضر دانشجو، تمرکز بر مدیریت سیستم‌ها و تحلیل داده‌ها"
+},
 ]
 
 @app.before_request
