@@ -1,169 +1,130 @@
 :root {
---radius: 1rem;
---color-primary: #0056b3;
---color-secondary: #6c757d;
---color-accent: #ffc107;
---font-main: 'Vazirmatn', sans-serif;
---bg: #f8f9fa;
---fg: #212529;
---card-bg: #fff;
+  --color-primary: #0a66c2;
+  --color-accent: #ff9800;
+  --bg-light: #ffffff;
+  --bg-dark: #121212;
+  --text-light: #f5f5f5;
+  --text-dark: #222;
+  --radius: 12px;
 }
 
+/* حالت روشن */
+body[data-theme='light'] {
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+}
+
+/* حالت تاریک */
 body[data-theme='dark'] {
-padding-top: 70px; /* ارتفاع منو */
---bg: #121212;
---fg: #f1f1f1;
---card-bg: #1e1e1e;
---color-primary: #4dabf7;
---color-secondary: #adb5bd;
---color-accent: #ffd43b;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+/* متن و لینک‌ها */
+body {
+  font-family: 'Vazirmatn', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  height: 100%;
+}
+
+a {
+  text-decoration: none;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+/* ---- Layout Fix ---- */
+html, body {
+  height: 100%;
+  margin: 0;
 }
 
 body {
-padding-top: 70px; /* ارتفاع منو */
-background: var(--bg);
-font-family: var(--font-main);
-color: var(--fg);
-transition: background 0.3s, color 0.3s;
-}
-/* حالت عادی (روشن) */
-.navbar-light .navbar-nav .nav-link {
-  color: #333; /* متن تیره */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-/* حالت دارک */
-body.dark-mode .navbar {
-  background-color: #222 !important;
+main.content-wrapper {
+  flex: 1;
+  padding-top: 90px; /* فاصله از navbar */
 }
 
-body.dark-mode .navbar .navbar-brand,
-body.dark-mode .navbar .nav-link {
-  color: #f1f1f1 !important;  /* سفید برای دیده شدن */
-}
-
-body.dark-mode .navbar .nav-link:hover {
-  color: #ffd700 !important; /* رنگ طلایی برای hover */
-}
-
-
-.navbar, footer {
-background: var(--card-bg);
-transition: background 0.3s;
-}
-
-.card, .navbar, .ratio, img {
-border-radius: var(--radius) !important;
-background: var(--card-bg);
-color: var(--fg);
-}
-
-.navbar-brand {
-font-weight: 700;
-color: var(--color-primary) !important;
-}
-
-.timeline li {
-position: relative;
-padding-left: 1.5rem;
-border-left: 2px solid var(--color-primary);
-}
-
-
-.timeline li::before {
-content: "";
-position: absolute;
-left: -6px;
-top: 4px;
-width: 12px;
-height: 12px;
-background: var(--color-accent);
-border-radius: 50%;
-}
-
-.fade-item {
-opacity: 0;
-transform: translateY(20px);
-transition: all 0.6s ease;
-}
-
-
-.fade-item.visible {
-opacity: 1;
-transform: translateY(0);
-}
-
-.btn-primary {
-background-color: var(--color-primary);
-border-color: var(--color-primary);
-}
-.btn-primary:hover {
-background-color: #003f88;
-border-color: #003f88;
-}
-
-
-.btn-outline-secondary {
-color: var(--color-secondary);
-border-color: var(--color-secondary);
-}
-.btn-outline-secondary:hover {
-background-color: var(--color-secondary);
-color: #fff;
-}
-
-
-.card, .navbar, .ratio, img {
-border-radius: var(--radius) !important;
-}
-
-
-.badge {
-border-radius: .7rem;
-}
-
-
-.badge.text-bg-secondary {
-background-color: var(--color-primary) !important;
-}
-
-
-h1, h2, h3, h4, h5 {
-font-weight: 700;
-color: var(--color-primary);
-}
-
-
+/* ---- Footer ---- */
 footer {
-border-top: 2px solid var(--color-accent);
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  border-top: 2px solid var(--color-accent);
 }
+
+body[data-theme='dark'] footer {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  border-color: #333;
+}
+
+footer a {
+  transition: color 0.3s, transform 0.3s;
+}
+
+footer a:hover {
+  color: var(--color-primary);
+  transform: scale(1.2);
+}
+
+
+a:hover {
+  transform: translateY(-2px);
+}
+
 /* --- Navbar --- */
 .navbar {
+  transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  padding: 0.8rem 1rem;
-  transition: padding 0.3s ease, background 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
-/* جمع‌تر شدن navbar هنگام اسکرول */
+body[data-theme='dark'] .navbar {
+  background-color: rgba(20, 20, 20, 0.85);
+}
+
+.navbar.scrolled {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+body[data-theme='dark'] .navbar.scrolled {
+  background-color: rgba(30, 30, 30, 0.95);
+}
+
 .navbar.shrink {
-  padding: 0.4rem 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 0.4rem 1rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* لینک‌ها */
+.navbar .navbar-brand {
+  font-weight: 700;
+  color: var(--color-primary) !important;
+}
+
 .navbar .nav-link {
   position: relative;
   font-weight: 500;
-  color: var(--fg);
+  color: inherit;
   margin: 0 0.4rem;
   transition: color 0.3s ease;
 }
+
 .navbar .nav-link:hover {
   color: var(--color-primary);
 }
 
-/* افکت خط زیر لینک */
+.navbar .nav-link.active {
+  color: var(--color-accent) !important;
+  font-weight: 600;
+}
+
+/* خط زیر لینک */
 .navbar .nav-link::after {
   content: "";
   position: absolute;
@@ -175,16 +136,148 @@ border-top: 2px solid var(--color-accent);
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }
+
 .navbar .nav-link:hover::after {
   width: 60%;
 }
 
-/* دکمه‌ها سمت راست */
+/* دکمه‌ها */
 .navbar .btn {
   border-radius: 50px;
   font-weight: 500;
   transition: transform 0.2s ease;
 }
+
 .navbar .btn:hover {
   transform: translateY(-2px);
+}
+
+/* کارت‌ها و تصاویر */
+.card,
+img,
+.ratio {
+  border-radius: var(--radius);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Timeline */
+.timeline li {
+  position: relative;
+  padding-left: 1.5rem;
+  border-left: 2px solid var(--color-primary);
+}
+
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-accent);
+  border-radius: 50%;
+}
+
+/* Fade animation */
+.fade-item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+
+.fade-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  border-radius: 12px;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #003f88;
+  border-color: #003f88;
+}
+
+.btn-outline-secondary {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  border-radius: 12px;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+/* Badges */
+.badge {
+  border-radius: .7rem;
+}
+
+.badge.text-bg-secondary {
+  background-color: var(--color-primary) !important;
+}
+
+/* عنوان‌ها */
+h1, h2, h3, h4, h5 {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* --- Footer --- */
+footer {
+  border-top: 2px solid var(--color-accent);
+  background: #f8f9fa;
+  padding: 15px 0;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+body[data-theme='dark'] footer {
+  background: #1e1e1e;
+  border-color: #333;
+}
+
+footer a {
+  transition: color 0.3s, transform 0.3s;
+}
+
+footer a:hover {
+  color: var(--color-primary);
+  transform: scale(1.2);
+}
+
+/* Scroll to top */
+#scrollTopBtn {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  background-color: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  font-size: 18px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 999;
+}
+
+#scrollTopBtn:hover {
+  transform: translateY(-5px);
+  background-color: var(--color-accent);
 }

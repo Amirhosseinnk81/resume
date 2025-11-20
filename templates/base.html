@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}امیرحسین نعیمائی{% endblock %}</title>
     <meta name="description" content="رزومه و نمونه‌کارهای {{ NAME }}" />
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/profile.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
@@ -13,8 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <meta name="description" content="{% block description %}توضیحات پیش‌فرض سایت{% endblock %}">
-    {# Open Graph #}
+
     {% block meta_og %}
     <meta property="og:title" content="{% block og_title %}رزومه من{% endblock %}" />
     <meta property="og:description" content="{% block og_desc %}معرفی من و پروژه‌هایم{% endblock %}" />
@@ -23,65 +23,27 @@
     <meta property="og:image" content="{{ url_for('static', filename='images/profile.jpg', _external=True) }}" />
     {% endblock %}
 
-    {# Twitter Card #}
     {% block meta_twitter %}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="{% block tw_title %}رزومه من{% endblock %}" />
     <meta name="twitter:description" content="{% block tw_desc %}معرفی من و پروژه‌هایم{% endblock %}" />
     <meta name="twitter:image" content="{{ url_for('static', filename='images/profile.jpg', _external=True) }}" />
     {% endblock %}
-    <!-- Favicon -->
+
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 </head>
 
-<style>
-    html,
-    body {
-        height: 100%;
-        margin: 0;
-    }
-
-    body {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
-
-    main {
-        flex: 1;
-        /* پر کنه فضای وسط */
-    }
-
-    footer {
-        background: #f8f9fa;
-        padding: 10px 0;
-        text-align: center;
-        border-top: 1px solid #ddd;
-    }
-
-    footer a {
-        transition: color 0.3s ease;
-    }
-
-    footer a:hover {
-        color: #0d6efd;
-        /* رنگ آبی بوت‌استرپ برای هاور */
-    }
-</style>
-
 <body>
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm fixed-top">
         <div class="container">
-            <!-- برند -->
             <a class="navbar-brand fw-bold" href="/">{{ t.NAME }}</a>
 
-            <!-- دکمه منو برای موبایل -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- منو -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link" href="/projects">{{ t.MENU_PROJECTS }}</a></li>
@@ -89,7 +51,6 @@
                     <li class="nav-item"><a class="nav-link" href="/contact">{{ t.MENU_CONTACT }}</a></li>
                 </ul>
 
-                <!-- دکمه‌ها -->
                 <div class="d-flex gap-2 mt-2 mt-lg-0">
                     <button id="themeToggle" class="btn btn-sm btn-outline-secondary" type="button">🌞</button>
                     <a href="{{ url_for('toggle_lang') }}" class="btn btn-outline-primary btn-sm">
@@ -98,16 +59,14 @@
                     <a href="{{ url_for('download_resume') }}" class="btn btn-primary" target="_blank">
                         📄 دانلود رزومه PDF
                     </a>
-
                 </div>
             </div>
         </div>
     </nav>
 
-
-
-    <main class="py-5">
-        <div class="container">
+    <!-- Main Content -->
+    <main class="content-wrapper">
+        <div class="container pt-5">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             <div class="mb-3">
@@ -121,34 +80,42 @@
         </div>
     </main>
 
-
+    <!-- Footer -->
     <footer class="border-top py-4">
         <div class="container d-flex flex-wrap gap-3 align-items-center justify-content-between">
             <small>© {{ year }} {{ NAME }} – تمام حقوق محفوظ است.</small>
             <div class="d-flex gap-3">
-                {% if SOCIALS.github %}<a href="{{ SOCIALS.github }}" target="_blank" class="text-dark mx-2"
-                    rel="noopener"><i class="fab fa-github fa-lg"></i></a>{% endif%}
-                {% if SOCIALS.linkedin %}<a href="{{ SOCIALS.linkedin }}" target="_blank" class="text-dark mx-2"
-                    rel="noopener"><i class="fab fa-linkedin fa-lg"></i></a>{%endif %}
-                {% if SOCIALS.twitter %}<a href="{{ SOCIALS.twitter }}" target="_blank" class="text-dark mx-2"
-                    rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>{% endif %}
-                <a href="https://t.me/amirhossein_nk81" target="_blank" class="text-dark mx-2"><i
-                        class="fab fa-telegram fa-lg"></i></a>
+                {% if SOCIALS.github %}
+                <a href="{{ SOCIALS.github }}" target="_blank" class="text-dark mx-2" rel="noopener">
+                    <i class="fab fa-github fa-lg"></i>
+                </a>
+                {% endif %}
+                {% if SOCIALS.linkedin %}
+                <a href="{{ SOCIALS.linkedin }}" target="_blank" class="text-dark mx-2" rel="noopener">
+                    <i class="fab fa-linkedin fa-lg"></i>
+                </a>
+                {% endif %}
+                {% if SOCIALS.twitter %}
+                <a href="{{ SOCIALS.twitter }}" target="_blank" class="text-dark mx-2" rel="noopener">
+                    <i class="fa-brands fa-x-twitter"></i>
+                </a>
+                {% endif %}
+                <a href="https://t.me/amirhossein_nk81" target="_blank" class="text-dark mx-2">
+                    <i class="fab fa-telegram fa-lg"></i>
+                </a>
             </div>
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script>
         AOS.init({
-            duration: 800, // مدت انیمیشن (ms)
-            once: true,    // فقط یک بار اجرا بشه
+            duration: 800,
+            once: true,
             easing: 'ease-in-out'
         });
     </script>
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
-
 </html>

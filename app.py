@@ -76,7 +76,7 @@ CONTACT_EMAIL = "amirhossein.naimaei81@gmail.com"
 
 SOCIALS = {
     "github": "https://github.com/Amirhosseinnk81",
-    "linkedin": "https://www.linkedin.com/in/yourname/",
+    "linkedin": "https://www.linkedin.com/in/amirhossein-naeimaei-618451374/",
     "twitter": "https://x.com/Amirnk_81",
 }
 SKILLS = [
