@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from datetime import datetime
 from flask_mail import Mail, Message
 from flask import send_from_directory
+import json
 
 
 app = Flask(__name__)
@@ -16,6 +17,15 @@ app.config['MAIL_PASSWORD'] = 'nuaa kqmd xqmo xrwp'        # پسورد اپ (ن
 app.config['MAIL_DEFAULT_SENDER'] = 'barokfinancial@gmail.com'
 
 mail = Mail(app)
+
+
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads", "articles")
+ALLOWED_EXTENSIONS = {"pdf"}
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # داده‌های دوزبانه
@@ -189,6 +199,70 @@ def projects():
 @app.route("/about")
 def about():
     return render_template("about.html", experiences=EXPERIENCES, education=EDUCATION, skills=SKILLS)
+
+@app.route("/articles")
+def articles():
+    with open("data/articles.json", encoding="utf-8") as f:
+        articles = json.load(f)
+    return render_template("articles.html", articles=articles)
+
+@app.route("/articles/download/<filename>")
+def download_article(filename):
+    return send_from_directory(
+        app.config["UPLOAD_FOLDER"],
+        filename,
+        as_attachment=True
+    )
+
+
+@app.route("/articles/add", methods=["GET", "POST"])
+def add_article():
+    if request.method == "POST":
+        title = request.form["title"]
+        abstract = request.form["abstract"]
+        year = request.form["year"]
+        file = request.files["file"]
+
+        if file and allowed_file(file.filename):
+            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+            file.save(filepath)
+
+            with open("data/articles.json", encoding="utf-8") as f:
+                articles = json.load(f)
+
+            articles.append({
+                "id": len(articles) + 1,
+                "title": title,
+                "abstract": abstract,
+                "authors": NAME,
+                "year": year,
+                "file": file.filename,
+                "language": session.get("lang", "fa")
+            })
+
+            with open("data/articles.json", "w", encoding="utf-8") as f:
+                json.dump(articles, f, ensure_ascii=False, indent=2)
+
+            flash("مقاله با موفقیت اضافه شد", "success")
+            return redirect(url_for("articles"))
+
+    return render_template("add_article.html")
+
+@app.route("/articles/<int:article_id>")
+def article_detail(article_id):
+    with open("data/articles.json", encoding="utf-8") as f:
+        articles = json.load(f)
+
+    article = next((a for a in articles if a["id"] == article_id), None)
+
+    if not article:
+        flash("مقاله مورد نظر پیدا نشد", "danger")
+        return redirect(url_for("articles"))
+
+    return render_template("article_detail.html", article=article)
+
+
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():

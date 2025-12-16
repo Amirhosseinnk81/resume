@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="container my-5">
+
+    <h2 class="mb-4 text-center">
+        📄 {{ "مقالات و انتشارات" if lang == "fa" else "Articles & Publications" }}
+    </h2>
+
+    {% if articles %}
+    <div class="list-group">
+
+        {% for article in articles %}
+        <div class="list-group-item mb-3 shadow-sm">
+
+            <h5 class="mb-1">
+                {{ article.title }}
+            </h5>
+
+            <p class="mb-1 text-muted small">
+                {{ article.authors }} – {{ article.year }}
+            </p>
+
+            <p class="mb-2">
+                {{ article.abstract }}
+            </p>
+
+            <h5 class="mb-1">
+                <a href="{{ url_for('article_detail', article_id=article.id) }}">
+                    {{ article.title }}
+                </a>
+            </h5>
+
+
+            <a href="{{ url_for('download_article', filename=article.file) }}" class="btn btn-sm btn-outline-primary">
+                ⬇ {{ "دانلود PDF" if lang == "fa" else "Download PDF" }}
+            </a>
+
+        </div>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <p class="text-center text-muted">
+        {{ "مقاله‌ای ثبت نشده است." if lang == "fa" else "No articles available." }}
+    </p>
+    {% endif %}
+
+</section>
+{% endblock %}

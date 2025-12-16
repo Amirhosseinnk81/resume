@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="container my-5">
+
+  <div class="mb-4">
+    <h2>{{ article.title }}</h2>
+
+    <p class="text-muted">
+      {{ article.authors }} |
+      {{ article.year }} |
+      {{ "زبان:" if lang == "fa" else "Language:" }}
+      {{ "فارسی" if article.language == "fa" else "English" }}
+    </p>
+  </div>
+
+  <hr>
+
+  <div class="mb-4">
+    <h5>
+      {{ "چکیده مقاله" if lang == "fa" else "Abstract" }}
+    </h5>
+    <p class="text-justify">
+      {{ article.abstract }}
+    </p>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('download_article', filename=article.file) }}"
+       class="btn btn-primary">
+      ⬇ {{ "دانلود فایل PDF" if lang == "fa" else "Download PDF" }}
+    </a>
+
+    <a href="{{ url_for('articles') }}"
+       class="btn btn-outline-secondary">
+      ← {{ "بازگشت به لیست مقالات" if lang == "fa" else "Back to Articles" }}
+    </a>
+  </div>
+
+</section>
+{% endblock %}
