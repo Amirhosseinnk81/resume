@@ -204,6 +204,9 @@ def about():
 def articles():
     with open("data/articles.json", encoding="utf-8") as f:
         articles = json.load(f)
+        for a in articles:
+            if "views" not in a:
+                a["views"] = 0
     return render_template("articles.html", articles=articles)
 
 @app.route("/articles/download/<filename>")
@@ -258,9 +261,20 @@ def article_detail(article_id):
 
     if not article:
         flash("مقاله مورد نظر پیدا نشد", "danger")
-        return redirect(url_for("articles"))
+        return redirect(url_for("articles"))  
 
-    return render_template("article_detail.html", article=article)
+    # افزایش تعداد بازدید
+    if "views" in article:
+        article["views"] += 1
+    else:
+        article["views"] = 1
+
+    # ذخیره مجدد JSON
+    with open("data/articles.json", "w", encoding="utf-8") as f:
+        json.dump(articles, f, ensure_ascii=False, indent=2)
+
+    return render_template("article_detail.html", article=article, lang="fa")
+
 
 
 

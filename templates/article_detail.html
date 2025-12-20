@@ -3,7 +3,7 @@
 {% block content %}
 <section class="container my-5">
 
-  <div class="mb-4">
+  <div class="mb-4 text-center">
     <h2>{{ article.title }}</h2>
 
     <p class="text-muted">
@@ -16,23 +16,33 @@
 
   <hr>
 
+  {% if article.image %}
+  <div class="mb-4 text-center position-relative">
+    <img src="{{ url_for('static', filename='images/' ~ article.image) }}" class="img-fluid rounded shadow-sm"
+      alt="{{ article.title }}">
+
+    <span class="position-absolute top-0 end-0 m-2 px-2 py-1 bg-light text-muted small rounded shadow-sm">
+      {{ article.views }} {{ "بازدید" if lang == "fa" else "views" }}
+    </span>
+
+  </div>
+  {% else %}
+  <p class="text-muted small mb-2">
+    {{ article.views }} {{ "بازدید" if lang == "fa" else "views" }}
+  </p>
+  {% endif %}
+
   <div class="mb-4">
-    <h5>
-      {{ "چکیده مقاله" if lang == "fa" else "Abstract" }}
-    </h5>
-    <p class="text-justify">
-      {{ article.abstract }}
-    </p>
+    <h5>{{ "چکیده مقاله" if lang == "fa" else "Abstract" }}</h5>
+    <p class="text-justify">{{ article.abstract }}</p>
   </div>
 
-  <div class="d-flex gap-2">
-    <a href="{{ url_for('download_article', filename=article.file) }}"
-       class="btn btn-primary">
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('download_article', filename=article.file) }}" class="btn btn-primary">
       ⬇ {{ "دانلود فایل PDF" if lang == "fa" else "Download PDF" }}
     </a>
 
-    <a href="{{ url_for('articles') }}"
-       class="btn btn-outline-secondary">
+    <a href="{{ url_for('articles') }}" class="btn btn-outline-secondary">
       ← {{ "بازگشت به لیست مقالات" if lang == "fa" else "Back to Articles" }}
     </a>
   </div>
