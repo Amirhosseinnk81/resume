@@ -4,7 +4,9 @@ from datetime import datetime
 from flask_mail import Mail, Message
 from flask import send_from_directory
 import json
-
+from admin import admin_bp
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
@@ -17,7 +19,9 @@ app.config['MAIL_PASSWORD'] = 'nuaa kqmd xqmo xrwp'        # پسورد اپ (ن
 app.config['MAIL_DEFAULT_SENDER'] = 'barokfinancial@gmail.com'
 
 mail = Mail(app)
+app.register_blueprint(admin_bp)
 
+load_dotenv()
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads", "articles")
 ALLOWED_EXTENSIONS = {"pdf"}
