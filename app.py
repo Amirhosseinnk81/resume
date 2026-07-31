@@ -11,17 +11,19 @@ import os
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
 
+load_dotenv()
+
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'amirhossein.naimaei81@gmail.com'     # ایمیل خودت
 app.config['MAIL_PASSWORD'] = 'nuaa kqmd xqmo xrwp'        # پسورد اپ (نه رمز اصلی!)
 app.config['MAIL_DEFAULT_SENDER'] = 'barokfinancial@gmail.com'
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 mail = Mail(app)
 app.register_blueprint(admin_bp)
 
-load_dotenv()
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads", "articles")
 ALLOWED_EXTENSIONS = {"pdf"}

@@ -1,29 +1,69 @@
-<div class="sidebar">
+<div class="sidebar p-3 text-white">
 
-    <h2>Admin Panel</h2>
+    <h4 class="mb-4">
 
-    <ul>
+        <i class="bi bi-speedometer2"></i>
 
-        <li>
-            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
-        </li>
+        Admin Panel
 
-        <li>
-            <a href="{{ url_for('admin.projects') }}">Projects</a>
-        </li>
+    </h4>
 
-        <li>
-            <a href="{{ url_for('admin.articles') }}">Articles</a>
-        </li>
+    <div class="list-group list-group-flush">
 
-        <li>
-            <a href="{{ url_for('admin.messages') }}">Messages</a>
-        </li>
+        <a class="list-group-item list-group-item-action"
+           href="{{ url_for('admin.dashboard') }}">
 
-        <li>
-            <a href="{{ url_for('admin.settings') }}">Settings</a>
-        </li>
+            <i class="bi bi-grid"></i>
 
-    </ul>
+            Dashboard
+
+        </a>
+
+        <a class="list-group-item list-group-item-action"
+           href="{{ url_for('admin.projects') }}">
+
+            <i class="bi bi-kanban"></i>
+
+            Projects
+
+        </a>
+
+        <a class="list-group-item list-group-item-action"
+           href="{{ url_for('admin.articles') }}">
+
+            <i class="bi bi-journal-text"></i>
+
+            Articles
+
+        </a>
+
+        <a class="list-group-item list-group-item-action"
+           href="{{ url_for('admin.messages') }}">
+
+            <i class="bi bi-envelope"></i>
+
+            Messages
+
+        </a>
+
+        <a class="list-group-item list-group-item-action"
+           href="{{ url_for('admin.settings') }}">
+
+            <i class="bi bi-gear"></i>
+
+            Settings
+
+        </a>
+
+        <a class="list-group-item list-group-item-action text-danger"
+           href="{{ url_for('admin.logout') }}">
+
+            <i class="bi bi-box-arrow-right"></i>
+
+            Logout
+
+        </a>
+
+    </div>
 
 </div>
