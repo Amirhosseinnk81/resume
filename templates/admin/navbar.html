@@ -1,5 +1,81 @@
-<div class="navbar">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm px-4">
 
-    <span>Admin Dashboard</span>
+    <div class="container-fluid">
 
-</div>
+        <h4 class="mb-0 fw-bold">
+            {{ page_title }}
+        </h4>
+
+        <div class="d-flex align-items-center gap-3">
+
+            <div class="input-group" style="width:260px;">
+
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+
+                <input type="text" class="form-control" placeholder="Search">
+
+            </div>
+
+            <button class="btn btn-light position-relative">
+
+                <i class="bi bi-bell"></i>
+
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    3
+                </span>
+
+            </button>
+
+            <button class="btn btn-light" id="themeToggle">
+
+                <i class="bi bi-moon"></i>
+
+            </button>
+
+            <div class="dropdown">
+
+                <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
+
+                    <i class="bi bi-person-circle"></i>
+
+                    {{ session["admin"]["username"] }}
+
+                </button>
+
+                <ul class="dropdown-menu">
+
+                    <li>
+
+                        <a class="dropdown-item" href="{{ url_for('admin.settings') }}">
+
+                            Settings
+
+                        </a>
+
+                    </li>
+
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+
+                    <li>
+
+                        <a class="dropdown-item text-danger" href="{{ url_for('admin.logout') }}">
+
+                            Logout
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>
