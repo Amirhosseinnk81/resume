@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "title": "Resume Website",
+        "description": "Personal resume and portfolio website.",
+        "technologies": [
+            "Python, Flask, Jinja2, HTML, CSS, Bootstrap"
+        ],
+        "github": "https://github.com/Amirhosseinnk81/resume"
+    },
+    {
+        "id": 2,
+        "title": "SW-backup",
+        "description": "ابزار پایتون برای اتصال به سوئیچ‌ها و دریافت پیکربندی آن‌ها به‌صورت خودکار",
+        "technologies": [
+            "Python, Paramiko, Netmiko, Networking, Automation"
+        ],
+        "github": "https://github.com/Amirhosseinnk81/SW-backup"
+    },
+    {
+        "id": 3,
+        "title": "Discount Website",
+        "description": "پلتفرم آنلاین برای ارائه و مدیریت تخفیف‌های فروشگاه‌ها",
+        "technologies": [
+            "Python, Flask, HTML, CSS, Bootstrap, SQLite"
+        ],
+        "github": "https://github.com/Amirhosseinnk81/discount-araz"
+    },
+    {
+        "id": 4,
+        "title": "Test Project",
+        "description": "Test project.",
+        "technologies": [
+            "Python"
+        ],
+        "github": "#"
+    }
+]

@@ -1,72 +1,74 @@
 {% extends "admin/base.html" %}
 
 {% block title %}
+
 Dashboard
+
 {% endblock %}
 
 {% block content %}
 
 <div class="container-fluid">
 
-<div class="row">
+<div class="row g-4">
 
-<div class="col-md-3">
-
-<div class="card shadow-sm">
-
-<div class="card-body">
-
-<h5>Projects</h5>
-
-<h2>3</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-md-3">
+<div class="col-lg-3">
 
 <div class="card shadow-sm">
 
 <div class="card-body">
 
-<h5>Articles</h5>
+<h6>Projects</h6>
 
-<h2>5</h2>
-
-</div>
+<h2>{{ stats.projects }}</h2>
 
 </div>
 
 </div>
 
-<div class="col-md-3">
+</div>
+
+<div class="col-lg-3">
 
 <div class="card shadow-sm">
 
 <div class="card-body">
 
-<h5>Messages</h5>
+<h6>Articles</h6>
 
-<h2>18</h2>
-
-</div>
+<h2>{{ stats.articles }}</h2>
 
 </div>
 
 </div>
 
-<div class="col-md-3">
+</div>
+
+<div class="col-lg-3">
 
 <div class="card shadow-sm">
 
 <div class="card-body">
 
-<h5>Visitors</h5>
+<h6>Messages</h6>
 
-<h2>146</h2>
+<h2>{{ stats.messages }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-lg-3">
+
+<div class="card shadow-sm">
+
+<div class="card-body">
+
+<h6>Visitors</h6>
+
+<h2>{{ stats.visitors }}</h2>
 
 </div>
 

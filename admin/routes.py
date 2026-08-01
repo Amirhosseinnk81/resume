@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, session, flash
-
+from .dashboard_service import get_dashboard_stats
 import os
 from . import admin_bp
 from .decorators import login_required
@@ -8,7 +8,10 @@ from .decorators import login_required
 @admin_bp.route("/")
 @login_required
 def dashboard():
-    return render_template("admin/dashboard.html", page_title="Dashboard")
+    
+    stats = get_dashboard_stats()
+    
+    return render_template("admin/dashboard.html" ,page_title="Dashboard" ,stats=stats)
 
 
 @admin_bp.route("/login", methods=["GET", "POST"])
@@ -64,3 +67,4 @@ def messages():
 @login_required
 def settings():
     return render_template("admin/settings.html", page_title="Settings")
+
