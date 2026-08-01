@@ -7,6 +7,8 @@ import json
 from admin import admin_bp
 from dotenv import load_dotenv
 import os
+import json
+from repositories.project_repository import get_projects
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
@@ -103,26 +105,7 @@ SKILLS = [
 {"name": "Git&Github", "level": 44},
 {"name": "HTML/CSS", "level": 43}
 ]
-PROJECTS = [
-{
-"title": "وب‌سایت رزومه شخصی",
-"desc": "طراحی و توسعه وب‌سایت رزومه با Flask و HTML/CSS",
-"stack": ["Python, Flask, Jinja2, HTML, CSS, Bootstrap"],
-"link": "https://github.com/Amirhosseinnk81/resume"
-},
-{
-"title": "SW-backup – ابزار پشتیبان‌گیری پیکربندی سوئیچ‌ها",
-"desc": "ابزار پایتون برای اتصال به سوئیچ‌ها و دریافت پیکربندی آن‌ها به‌صورت خودکار",
-"stack": ["Python, Paramiko, Netmiko, Networking, Automation"],
-"link": "https://github.com/Amirhosseinnk81/SW-backup"
-},
-{
-"title": "وب‌سایت تخفیف",
-"desc": "پلتفرم آنلاین برای ارائه و مدیریت تخفیف‌های فروشگاه‌ها",
-"stack": ["Python, Flask, HTML, CSS, Bootstrap, SQLite"],
-"link": "https://github.com/Amirhosseinnk81/discount-araz"
-},
-]
+
 
 EXPERIENCES = [
 {
@@ -190,33 +173,73 @@ def inject_globals():
 @app.route("/lang/<code>")
 def switch_lang(code):
     if code in translations:
-        session['lang'] = code
-    return redirect(request.referrer or url_for("home"))
+        session["lang"] = code
 
-@app.route("/")    
+    return redirect(
+        request.referrer or url_for("home")
+    )
+
+
+
+
+
+@app.route("/")
 def home():
-    return render_template("index.html", skills=SKILLS, projects=PROJECTS, profile=profile)
+
+    projects = get_projects()
+
+    return render_template(
+        "index.html",
+        skills=SKILLS,
+        projects=projects,
+        profile=profile
+    )
 
 @app.route("/projects")
 def projects():
-    return render_template("projects.html", projects=PROJECTS)
 
+    projects = get_projects()
+
+    return render_template(
+        "projects.html",
+        projects=projects
+    )
 
 @app.route("/about")
 def about():
-    return render_template("about.html", experiences=EXPERIENCES, education=EDUCATION, skills=SKILLS)
+
+    return render_template(
+        "about.html",
+        experiences=EXPERIENCES,
+        education=EDUCATION,
+        skills=SKILLS
+    )
+
 
 @app.route("/articles")
 def articles():
-    with open("data/articles.json", encoding="utf-8") as f:
+
+    with open(
+        "data/articles.json",
+        encoding="utf-8"
+    ) as f:
+
         articles = json.load(f)
+
         for a in articles:
+
             if "views" not in a:
                 a["views"] = 0
-    return render_template("articles.html", articles=articles)
+
+    return render_template(
+        "articles.html",
+        articles=articles
+    )
+
 
 @app.route("/articles/download/<filename>")
 def download_article(filename):
+
     return send_from_directory(
         app.config["UPLOAD_FOLDER"],
         filename,
