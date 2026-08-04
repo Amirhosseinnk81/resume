@@ -4,7 +4,12 @@
         "title": "Resume Website",
         "description": "Personal resume and portfolio website.",
         "technologies": [
-            "Python, Flask, Jinja2, HTML, CSS, Bootstrap"
+            "Python",
+            "Flask",
+            "Jinja2",
+            "HTML",
+            "CSS",
+            "Bootstrap"
         ],
         "github": "https://github.com/Amirhosseinnk81/resume"
     },
@@ -13,7 +18,11 @@
         "title": "SW-backup",
         "description": "ابزار پایتون برای اتصال به سوئیچ‌ها و دریافت پیکربندی آن‌ها به‌صورت خودکار",
         "technologies": [
-            "Python, Paramiko, Netmiko, Networking, Automation"
+            "Python",
+            "Paramiko",
+            "Netmiko",
+            "Networking",
+            "Automation"
         ],
         "github": "https://github.com/Amirhosseinnk81/SW-backup"
     },
@@ -22,7 +31,12 @@
         "title": "Discount Website",
         "description": "پلتفرم آنلاین برای ارائه و مدیریت تخفیف‌های فروشگاه‌ها",
         "technologies": [
-            "Python, Flask, HTML, CSS, Bootstrap, SQLite"
+            "Python",
+            "Flask",
+            "HTML",
+            "CSS",
+            "Bootstrap",
+            "SQLite"
         ],
         "github": "https://github.com/Amirhosseinnk81/discount-araz"
     },
@@ -44,46 +58,6 @@
             "Flask",
             "PostgreSQL"
         ],
-        "github": "https://github.com/example/project"
-    },
-    {
-        "title": "ملنتس",
-        "description": "منقسیتدلم",
-        "technologies": [
-            "میسدل"
-        ],
-        "github": "http://127.0.0.1:5000/admin/projects",
-        "id": 6
-    },
-    {
-        "title": "Hotel Management System",
-        "description": "Hotel management and guest request management system.",
-        "technologies": [
-            "Python",
-            "Flask",
-            "PostgreSQL"
-        ],
-        "github": "https://github.com/example/project",
-        "id": 7
-    },
-    {
-        "title": "Hotel Management System",
-        "description": "Hotel management and guest request management system.",
-        "technologies": [
-            "Python",
-            "Flask",
-            "PostgreSQL"
-        ],
-        "github": "https://github.com/example/project",
-        "id": 8
-    },
-    {
-        "id": 9,
-        "title": "ملنتس",
-        "description": "منقسیتدلم",
-        "technologies": [
-            "dfgdfg"
-        ],
-        "github": "http://127.0.0.1:5000/admin/projects"
+        "github": "#"
     }
 ]

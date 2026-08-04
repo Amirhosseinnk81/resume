@@ -53,7 +53,9 @@ def logout():
 @login_required
 def projects():
     projects = get_projects()
-    return render_template("admin/projects.html", page_title="Projects" ,projects=projects)
+    return render_template(
+        "admin/projects.html", page_title="Projects", projects=projects
+    )
 
 
 @admin_bp.route("/projects/create", methods=["GET", "POST"])
@@ -94,8 +96,8 @@ def create_project_view():
                     "technologies": technologies,
                     "github": github,
                 },
+                edit_mode=False,
             )
-
         project = {
             "title": title,
             "description": description,
@@ -108,7 +110,11 @@ def create_project_view():
         return redirect(url_for("admin.projects"))
 
     return render_template(
-        "admin/project_form.html", page_title="Add Project", errors=[], project={}
+        "admin/project_form.html",
+        page_title="Add Project",
+        errors=[],
+        project={},
+        edit_mode=False,
     )
 
 
