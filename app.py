@@ -187,11 +187,13 @@ def switch_lang(code):
 def home():
 
     projects = get_projects()
+    articles = get_articles()
 
     return render_template(
         "index.html",
         skills=SKILLS,
         projects=projects,
+        articles=articles,
         profile=profile
     )
 
@@ -215,6 +217,24 @@ def about():
         skills=SKILLS
     )
 
+def get_articles():
+
+    articles_file = os.path.join(
+        app.root_path,
+        "data",
+        "articles.json"
+    )
+
+    if not os.path.exists(articles_file):
+        return []
+
+    with open(
+        articles_file,
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        return json.load(f)
 
 @app.route("/articles")
 def articles():
