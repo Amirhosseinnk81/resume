@@ -250,84 +250,144 @@
      FOOTER
 ===================================================== -->
 
+    <!-- =====================================================
+     FOOTER
+===================================================== -->
+
     <footer class="site-footer">
 
         <div class="container">
 
-            <div class="footer-content">
+            <div class="footer-main">
 
-                <!-- Identity -->
+                <!-- Brand -->
 
                 <div class="footer-brand">
 
-                    <div class="footer-brand-title">
+                    <a href="{{ url_for('home') }}" class="footer-logo">
                         {{ NAME }}
-                    </div>
+                    </a>
 
-                    <div class="footer-brand-description">
-                        IT Specialist · Software Developer
+                    <p class="footer-description">
+                        توسعه‌دهنده نرم‌افزار و متخصص IT،
+                        علاقه‌مند به طراحی سیستم‌های کاربردی،
+                        شبکه و فناوری‌های نوین.
+                    </p>
+
+                    <div class="footer-status">
+
+                        <span class="status-dot"></span>
+
+                        <span>
+                            آماده همکاری
+                        </span>
+
                     </div>
 
                 </div>
 
 
-                <!-- Social Links -->
+                <!-- Navigation -->
 
-                <div class="footer-socials">
+                <div class="footer-column">
 
-                    {% if SOCIALS.github %}
+                    <h3>
+                        دسترسی سریع
+                    </h3>
 
-                    <a href="{{ SOCIALS.github }}" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <ul>
 
-                        <i class="fa-brands fa-github"></i>
+                        <li>
+                            <a href="{{ url_for('home') }}">
+                                خانه
+                            </a>
+                        </li>
 
-                    </a>
+                        <li>
+                            <a href="{{ url_for('about') }}">
+                                درباره من
+                            </a>
+                        </li>
 
-                    {% endif %}
+                        <li>
+                            <a href="{{ url_for('projects') }}">
+                                پروژه‌ها
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ url_for('articles') }}">
+                                مقالات
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ url_for('contact') }}">
+                                تماس با من
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
 
 
-                    {% if SOCIALS.linkedin %}
+                <!-- Social -->
 
-                    <a href="{{ SOCIALS.linkedin }}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <div class="footer-column">
 
-                        <i class="fa-brands fa-linkedin-in"></i>
+                    <h3>
+                        ارتباط با من
+                    </h3>
 
-                    </a>
+                    <div class="footer-socials">
 
-                    {% endif %}
+                        {% if SOCIALS.github %}
 
+                        <a href="{{ SOCIALS.github }}" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                            <i class="fa-brands fa-github"></i>
+                        </a>
 
-                    {% if SOCIALS.twitter %}
-
-                    <a href="{{ SOCIALS.twitter }}" target="_blank" rel="noopener noreferrer" aria-label="X">
-
-                        <i class="fa-brands fa-x-twitter"></i>
-
-                    </a>
-
-                    {% endif %}
+                        {% endif %}
 
 
-                    <a href="https://t.me/amirhossein_nk81" target="_blank" rel="noopener noreferrer"
-                        aria-label="Telegram">
+                        {% if SOCIALS.linkedin %}
 
-                        <i class="fa-brands fa-telegram"></i>
+                        <a href="{{ SOCIALS.linkedin }}" target="_blank" rel="noopener noreferrer"
+                            aria-label="LinkedIn">
+                            <i class="fa-brands fa-linkedin-in"></i>
+                        </a>
 
-                    </a>
+                        {% endif %}
+
+
+                        {% if SOCIALS.twitter %}
+
+                        <a href="{{ SOCIALS.twitter }}" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                            <i class="fa-brands fa-x-twitter"></i>
+                        </a>
+
+                        {% endif %}
+
+                    </div>
 
                 </div>
 
             </div>
 
 
+            <!-- Bottom -->
+
             <div class="footer-bottom">
 
                 <span>
-                    © {{ year }} {{ NAME }}
+                    © {{ current_year }} {{ NAME }}
                 </span>
 
                 <span>
-                    تمام حقوق محفوظ است.
+                    ساخته شده با
+                    <i class="fa-solid fa-code"></i>
+                    و Flask
                 </span>
 
             </div>

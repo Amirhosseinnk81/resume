@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ project.title }} | امیرحسین نعیمائی
+{% endblock %}
+
+{% block meta_description %}
+{{ project.description }}
+{% endblock %}
+
+{% block og_title %}
+{{ project.title }}
+{% endblock %}
+
+{% block og_desc %}
+{{ project.description }}
+{% endblock %}
+
+{% block tw_title %}
+{{ project.title }}
+{% endblock %}
+
+{% block tw_desc %}
+{{ project.description }}
+{% endblock %}
+
+
+{% block content %}
+
+<section class="project-detail-page">
+
+    <!-- Back -->
+
+    <a
+        href="{{ url_for('projects') }}"
+        class="project-detail-back"
+    >
+
+        <i class="fa-solid fa-arrow-right"></i>
+
+        بازگشت به پروژه‌ها
+
+    </a>
+
+
+    <!-- Header -->
+
+    <header
+        class="project-detail-header"
+        data-aos="fade-up"
+    >
+
+        <span class="section-eyebrow">
+            PROJECT #{{ "%02d"|format(project.id) }}
+        </span>
+
+        <h1>
+            {{ project.title }}
+        </h1>
+
+        <p>
+            {{ project.description }}
+        </p>
+
+    </header>
+
+
+    <!-- Content -->
+
+    <div class="project-detail-layout">
+
+        <!-- Main -->
+
+        <main
+            class="project-detail-main"
+            data-aos="fade-up"
+        >
+
+            <div class="project-detail-icon">
+
+                <i class="fa-solid fa-code"></i>
+
+            </div>
+
+
+            <h2>
+                درباره پروژه
+            </h2>
+
+            <p>
+                {{ project.description }}
+            </p>
+
+        </main>
+
+
+        <!-- Sidebar -->
+
+        <aside
+            class="project-detail-sidebar"
+            data-aos="fade-up"
+            data-aos-delay="100"
+        >
+
+            <div class="project-detail-box">
+
+                <h3>
+                    تکنولوژی‌ها
+                </h3>
+
+                {% if project.technologies %}
+
+                <div class="project-detail-technologies">
+
+                    {% for technology in project.technologies %}
+
+                    <span>
+                        {{ technology }}
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if project.github and project.github != "#" %}
+
+            <div class="project-detail-box">
+
+                <h3>
+                    سورس پروژه
+                </h3>
+
+                <a
+                    href="{{ project.github }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="project-detail-github"
+                >
+
+                    <i class="fa-brands fa-github"></i>
+
+                    مشاهده در GitHub
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </aside>
+
+    </div>
+
+</section>
+
+{% endblock %}
