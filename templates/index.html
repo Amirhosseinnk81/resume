@@ -453,13 +453,43 @@
 
             <article class="article-card">
 
-                <!-- Article Icon -->
+                <!-- Image -->
+
+                <div class="article-card-image">
+
+                    {% if article.image %}
+
+                    <img src="{{ url_for(
+                            'static',
+                            filename='images/' ~ article.image
+                        ) }}" alt="{{ article.title }}">
+
+                    {% else %}
+
+                    <div class="article-image-placeholder">
+
+                        <i class="fa-solid fa-newspaper"></i>
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Header -->
 
                 <div class="article-card-header">
 
-                    <div class="article-card-icon">
+                    <div class="article-card-meta">
 
-                        <i class="fa-solid fa-newspaper"></i>
+                        <span>
+                            {{ article.year }}
+                        </span>
+
+                        <span>
+                            {{ article.authors }}
+                        </span>
 
                     </div>
 
@@ -472,7 +502,7 @@
                 </div>
 
 
-                <!-- Article Content -->
+                <!-- Content -->
 
                 <div class="article-card-body">
 
@@ -481,25 +511,9 @@
                     </h3>
 
 
-                    {% if article.description %}
-
                     <p>
-                        {{ article.description }}
+                        {{ article.abstract }}
                     </p>
-
-                    {% elif article.summary %}
-
-                    <p>
-                        {{ article.summary }}
-                    </p>
-
-                    {% else %}
-
-                    <p>
-                        برای مطالعه این مقاله وارد صفحه مقاله شوید.
-                    </p>
-
-                    {% endif %}
 
                 </div>
 
@@ -508,9 +522,18 @@
 
                 <div class="article-card-footer">
 
+                    <span class="article-views">
+
+                        <i class="fa-regular fa-eye"></i>
+
+                        {{ article.views }}
+
+                    </span>
+
+
                     <a href="{{ url_for(
-                            'article_detail',
-                            slug=article.slug
+                            'download_article',
+                            filename=article.file
                         ) }}" class="article-read-more">
 
                         مطالعه مقاله
@@ -542,6 +565,51 @@
         </div>
 
         {% endfor %}
+
+    </div>
+
+</section>
+
+<!-- =====================================================
+     CONTACT CTA
+===================================================== -->
+
+<section class="home-section contact-cta-section">
+
+    <div class="contact-cta" data-aos="fade-up">
+
+        <div class="contact-cta-content">
+
+            <span class="section-eyebrow">
+                GET IN TOUCH
+            </span>
+
+            <h2>
+                پروژه‌ای در ذهن داری؟
+            </h2>
+
+            <p>
+                اگر درباره یک پروژه، همکاری یا موضوع فنی
+                می‌خواهی صحبت کنیم، از طریق صفحه تماس
+                با من در ارتباط باش.
+            </p>
+
+        </div>
+
+
+        <div class="contact-cta-action">
+
+            <a href="{{ url_for('contact') }}" class="contact-cta-button">
+
+                <span>
+                    تماس با من
+                </span>
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+            </a>
+
+        </div>
 
     </div>
 

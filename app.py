@@ -179,15 +179,31 @@ def switch_lang(code):
         request.referrer or url_for("home")
     )
 
+@app.context_processor
+def inject_global_variables():
 
-
-
+    return {
+        "current_year": datetime.now().year,
+        "NAME": NAME,
+        "SOCIALS": SOCIALS
+    }
 
 @app.route("/")
 def home():
 
     projects = get_projects()
-    articles = get_articles()
+
+    with open(
+        os.path.join(
+            app.root_path,
+            "data",
+            "articles.json"
+        ),
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        articles = json.load(f)
 
     return render_template(
         "index.html",
@@ -205,6 +221,28 @@ def projects():
     return render_template(
         "projects.html",
         projects=projects
+    )
+    
+@app.route("/projects/<int:project_id>")
+def project_detail(project_id):
+
+    projects = get_projects()
+
+    project = next(
+        (
+            project
+            for project in projects
+            if project.get("id") == project_id
+        ),
+        None
+    )
+
+    if project is None:
+        return "Project not found", 404
+
+    return render_template(
+        "project_detail.html",
+        project=project
     )
 
 @app.route("/about")

@@ -1,66 +1,187 @@
 {% extends 'base.html' %}
-{% block title %}امیرحسین نعیمائی | پروژه‌ها{% endblock %}
-{% block meta_description %}لیست پروژه‌های انجام‌شده در حوزه طراحی وب، نرم‌افزار و سیستم‌های هوشمند.{% endblock %}
 
-{% block og_title %}پروژه‌ها{% endblock %}
-{% block og_desc %}مشاهده پروژه‌های طراحی وب و نرم‌افزار انجام‌شده توسط من.{% endblock %}
+{% block title %}
+امیرحسین نعیمائی | پروژه‌ها
+{% endblock %}
 
-{% block tw_title %}پروژه‌ها{% endblock %}
-{% block tw_desc %}مشاهده پروژه‌های طراحی وب و نرم‌افزار انجام‌شده توسط من.{% endblock %}
+{% block meta_description %}
+لیست پروژه‌های انجام‌شده در حوزه طراحی وب، نرم‌افزار و سیستم‌های هوشمند.
+{% endblock %}
+
+{% block og_title %}
+پروژه‌ها
+{% endblock %}
+
+{% block og_desc %}
+مشاهده پروژه‌های طراحی وب و نرم‌افزار انجام‌شده توسط من.
+{% endblock %}
+
+{% block tw_title %}
+پروژه‌ها
+{% endblock %}
+
+{% block tw_desc %}
+مشاهده پروژه‌های طراحی وب و نرم‌افزار انجام‌شده توسط من.
+{% endblock %}
+
 
 {% block content %}
-<h1 style="font-size: 28px;">{{ t.MENU_PROJECTS }}</h1>
-<h2>{{ t.PAGE_PROJECTS_SUBTITLE }}</h2>
-<div class="row row-cols-1 row-cols-md-2 g-4" data-aos="fade-up">
-    {% for project in projects %}
 
-<div class="project-card">
+<section class="projects-page">
 
-    <h3>
-        {{ project.title }}
-    </h3>
+    <!-- ================================================
+         PAGE HEADER
+    ================================================= -->
 
-    <p>
-        {{ project.description }}
-    </p>
+    <header class="projects-page-header" data-aos="fade-up">
 
-    {% if project.technologies %}
-
-    <div class="technologies">
-
-        {% for technology in project.technologies %}
-
-        <span class="technology">
-            {{ technology }}
+        <span class="section-eyebrow">
+            MY WORK
         </span>
+
+        <h1>
+            {{ t.MENU_PROJECTS }}
+        </h1>
+
+        <p>
+            {{ t.PAGE_PROJECTS_SUBTITLE }}
+        </p>
+
+    </header>
+
+
+    <!-- ================================================
+         PROJECT GRID
+    ================================================= -->
+
+    <div class="projects-grid">
+
+        {% for project in projects %}
+
+        <article class="project-page-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 60 }}">
+
+            <!-- Card Header -->
+
+            <div class="project-page-card-header">
+
+                <div class="project-page-icon">
+
+                    <i class="fa-solid fa-code"></i>
+
+                </div>
+
+                <span class="project-page-number">
+
+                    #{{ "%02d"|format(loop.index) }}
+
+                </span>
+
+            </div>
+
+
+            <!-- Card Content -->
+
+            <div class="project-page-card-content">
+
+                <h2>
+                    {{ project.title }}
+                </h2>
+
+                <p>
+                    {{ project.description }}
+                </p>
+
+
+                <!-- Technologies -->
+
+                {% if project.technologies %}
+
+                <div class="project-page-technologies">
+
+                    {% for technology in project.technologies %}
+
+                    <span class="project-page-technology">
+                        {{ technology }}
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Card Footer -->
+
+            <div class="project-page-card-footer">
+
+                {% if project.github and project.github != "#" %}
+
+                <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="project-page-github">
+
+                    <i class="fa-brands fa-github"></i>
+
+                    <span>
+                        GitHub
+                    </span>
+
+                </a>
+
+                {% else %}
+
+                <span class="project-page-private">
+
+                    <i class="fa-solid fa-lock"></i>
+
+                    پروژه خصوصی
+
+                </span>
+
+                {% endif %}
+
+
+                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="project-page-arrow"
+                    aria-label="مشاهده جزئیات {{ project.title }}">
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </a>
+
+            </div>
+
+        </article>
+
+
+        {% else %}
+
+        <!-- ============================================
+             EMPTY STATE
+        ============================================= -->
+
+        <div class="projects-empty">
+
+            <div class="projects-empty-icon">
+
+                <i class="fa-regular fa-folder-open"></i>
+
+            </div>
+
+            <h2>
+                هنوز پروژه‌ای ثبت نشده است
+            </h2>
+
+            <p>
+                در حال حاضر پروژه‌ای برای نمایش وجود ندارد.
+            </p>
+
+        </div>
 
         {% endfor %}
 
     </div>
 
-    {% endif %}
+</section>
 
-    {% if project.github and project.github != "#" %}
-
-    <a
-        href="{{ project.github }}"
-        target="_blank"
-        rel="noopener noreferrer">
-
-        GitHub
-
-    </a>
-
-    {% endif %}
-
-</div>
-
-{% else %}
-
-<p>
-    No projects available.
-</p>
-
-{% endfor %}
-</div>
 {% endblock %}
