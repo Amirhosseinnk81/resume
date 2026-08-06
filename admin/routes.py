@@ -8,6 +8,7 @@ from repositories.project_repository import (
     get_project_by_id,
     create_project,
     update_project,
+    delete_project,
 )
 
 
@@ -69,7 +70,17 @@ def create_project_view():
         technologies_raw = request.form.get("technologies", "").strip()
         github = request.form.get("github", "").strip()
 
+        image = request.form.get("image", "").strip()
+        status = request.form.get("status", "completed").strip()
+        year_raw = request.form.get("year", "").strip()
+        features_raw = request.form.get("features", "").strip()
+
         errors = []
+
+
+        # -----------------------------
+        # Basic validation
+        # -----------------------------
 
         if not title:
             errors.append("عنوان پروژه الزامی است.")
@@ -77,12 +88,69 @@ def create_project_view():
         if not description:
             errors.append("توضیحات پروژه الزامی است.")
 
+
+        # -----------------------------
+        # Technologies
+        # -----------------------------
+
         technologies = [
-            item.strip() for item in technologies_raw.split(",") if item.strip()
+            item.strip()
+            for item in technologies_raw.split(",")
+            if item.strip()
         ]
 
         if not technologies:
             errors.append("حداقل یک تکنولوژی وارد کنید.")
+
+
+        # -----------------------------
+        # Features
+        # -----------------------------
+
+        features = [
+            item.strip()
+            for item in features_raw.split(",")
+            if item.strip()
+        ]
+
+
+        # -----------------------------
+        # Year
+        # -----------------------------
+
+        year = None
+
+        if year_raw:
+
+            try:
+
+                year = int(year_raw)
+
+            except ValueError:
+
+                errors.append("سال پروژه باید عدد باشد.")
+
+
+        # -----------------------------
+        # Status
+        # -----------------------------
+
+        allowed_statuses = [
+            "completed",
+            "in-progress",
+            "planned"
+        ]
+
+        if status not in allowed_statuses:
+
+            errors.append(
+                "وضعیت پروژه نامعتبر است."
+            )
+
+
+        # -----------------------------
+        # Validation errors
+        # -----------------------------
 
         if errors:
 
@@ -95,19 +163,50 @@ def create_project_view():
                     "description": description,
                     "technologies": technologies,
                     "github": github,
+                    "image": image,
+                    "status": status,
+                    "year": year_raw,
+                    "features": features,
                 },
                 edit_mode=False,
             )
+
+
+        # -----------------------------
+        # New project
+        # -----------------------------
+
         project = {
+
             "title": title,
+
             "description": description,
+
             "technologies": technologies,
+
             "github": github,
+
+            "image": image,
+
+            "status": status,
+
+            "year": year,
+
+            "features": features,
         }
+
 
         create_project(project)
 
-        return redirect(url_for("admin.projects"))
+
+        return redirect(
+            url_for("admin.projects")
+        )
+
+
+    # -----------------------------
+    # GET
+    # -----------------------------
 
     return render_template(
         "admin/project_form.html",
@@ -130,14 +229,20 @@ def edit_project(project_id):
     if request.method == "POST":
 
         title = request.form.get("title", "").strip()
-
         description = request.form.get("description", "").strip()
-
         technologies_raw = request.form.get("technologies", "").strip()
-
         github = request.form.get("github", "").strip()
 
+        image = request.form.get("image", "").strip()
+        status = request.form.get("status", "completed").strip()
+        year_raw = request.form.get("year", "").strip()
+        features_raw = request.form.get("features", "").strip()
+
         errors = []
+
+        # -----------------------------
+        # Basic validation
+        # -----------------------------
 
         if not title:
             errors.append("عنوان پروژه الزامی است.")
@@ -145,12 +250,52 @@ def edit_project(project_id):
         if not description:
             errors.append("توضیحات پروژه الزامی است.")
 
+        # -----------------------------
+        # Technologies
+        # -----------------------------
+
         technologies = [
             item.strip() for item in technologies_raw.split(",") if item.strip()
         ]
 
         if not technologies:
             errors.append("حداقل یک تکنولوژی وارد کنید.")
+
+        # -----------------------------
+        # Features
+        # -----------------------------
+
+        features = [item.strip() for item in features_raw.split(",") if item.strip()]
+
+        # -----------------------------
+        # Year
+        # -----------------------------
+
+        year = None
+
+        if year_raw:
+
+            try:
+
+                year = int(year_raw)
+
+            except ValueError:
+
+                errors.append("سال پروژه باید عدد باشد.")
+
+        # -----------------------------
+        # Status
+        # -----------------------------
+
+        allowed_statuses = ["completed", "in-progress", "planned"]
+
+        if status not in allowed_statuses:
+
+            errors.append("وضعیت پروژه نامعتبر است.")
+
+        # -----------------------------
+        # Validation errors
+        # -----------------------------
 
         if errors:
 
@@ -160,6 +305,10 @@ def edit_project(project_id):
                 "description": description,
                 "technologies": technologies,
                 "github": github,
+                "image": image,
+                "status": status,
+                "year": year_raw,
+                "features": features,
             }
 
             return render_template(
@@ -170,17 +319,32 @@ def edit_project(project_id):
                 edit_mode=True,
             )
 
+        # -----------------------------
+        # Updated project
+        # -----------------------------
+
         updated_project = {
             "id": project_id,
             "title": title,
             "description": description,
             "technologies": technologies,
             "github": github,
+            "image": image,
+            "status": status,
+            "year": year,
+            "features": features,
         }
+
+        # IMPORTANT:
+        # Update existing project by ID
 
         update_project(project_id, updated_project)
 
         return redirect(url_for("admin.projects"))
+
+    # -----------------------------
+    # GET
+    # -----------------------------
 
     return render_template(
         "admin/project_form.html",
@@ -190,6 +354,22 @@ def edit_project(project_id):
         edit_mode=True,
     )
 
+@admin_bp.route("/projects/<int:project_id>/delete", methods=["POST"])
+@login_required
+def delete_project_view(project_id):
+
+    deleted_project = delete_project(project_id)
+
+    if deleted_project is None:
+        flash("پروژه موردنظر پیدا نشد.", "danger")
+        return redirect(url_for("admin.projects"))
+
+    flash(
+        f'پروژه "{deleted_project.get("title", "")}" با موفقیت حذف شد.',
+        "success"
+    )
+
+    return redirect(url_for("admin.projects"))
 
 @admin_bp.route("/articles")
 @login_required

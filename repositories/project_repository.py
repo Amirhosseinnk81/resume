@@ -97,3 +97,18 @@ def update_project(project_id, updated_data):
             return updated_data
 
     return None
+
+def delete_project(project_id):
+    projects = get_projects()
+
+    for index, project in enumerate(projects):
+
+        if project.get("id") == project_id:
+
+            deleted_project = projects.pop(index)
+
+            # save_projects(projects)
+
+            return deleted_project
+
+    return None
