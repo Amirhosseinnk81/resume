@@ -11,7 +11,16 @@
             "CSS",
             "Bootstrap"
         ],
-        "github": "https://github.com/Amirhosseinnk81/resume"
+        "github": "https://github.com/Amirhosseinnk81/resume",
+        "image": "profile.jpg",
+        "status": "completed",
+        "year": 2026,
+        "features": [
+            "Personal portfolio",
+            "Project management",
+            "Article management",
+            "Admin dashboard"
+        ]
     },
     {
         "id": 2,
@@ -24,7 +33,15 @@
             "Networking",
             "Automation"
         ],
-        "github": "https://github.com/Amirhosseinnk81/SW-backup"
+        "github": "https://github.com/Amirhosseinnk81/SW-backup",
+        "image": "",
+        "status": "completed",
+        "year": 2025,
+        "features": [
+            "Network device connection",
+            "Automatic configuration backup",
+            "Network automation"
+        ]
     },
     {
         "id": 3,
@@ -38,19 +55,18 @@
             "Bootstrap",
             "SQLite"
         ],
-        "github": "https://github.com/Amirhosseinnk81/discount-araz"
+        "github": "https://github.com/Amirhosseinnk81/discount-araz",
+        "image": "",
+        "status": "completed",
+        "year": 2025,
+        "features": [
+            "Discount management",
+            "Web-based platform",
+            "Store management"
+        ]
     },
     {
         "id": 4,
-        "title": "Test Project",
-        "description": "Test project.",
-        "technologies": [
-            "Python"
-        ],
-        "github": "#"
-    },
-    {
-        "id": 5,
         "title": "Hotel Management System",
         "description": "Hotel management and guest request management system.",
         "technologies": [
@@ -58,6 +74,33 @@
             "Flask",
             "PostgreSQL"
         ],
-        "github": "#"
+        "github": "",
+        "image": "",
+        "status": "in-progress",
+        "year": 2026,
+        "features": [
+            "Guest request management",
+            "Hotel workflow management",
+            "Admin dashboard"
+        ]
+    },
+    {
+        "id": 5,
+        "title": "Test Advanced Project",
+        "description": "پروژه تست مدیریت حرفه‌ای",
+        "technologies": [
+            "Python",
+            "Flask",
+            "PostgreSQL"
+        ],
+        "github": "https://github.com/test/project",
+        "image": "profile.jpg",
+        "status": "completed",
+        "year": 2025,
+        "features": [
+            "Admin Dashboard",
+            "Authentication",
+            "Project Management"
+        ]
     }
 ]

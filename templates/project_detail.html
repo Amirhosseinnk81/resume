@@ -31,10 +31,7 @@
 
     <!-- Back -->
 
-    <a
-        href="{{ url_for('projects') }}"
-        class="project-detail-back"
-    >
+    <a href="{{ url_for('projects') }}" class="project-detail-back">
 
         <i class="fa-solid fa-arrow-right"></i>
 
@@ -45,18 +42,42 @@
 
     <!-- Header -->
 
-    <header
-        class="project-detail-header"
-        data-aos="fade-up"
-    >
+    <header class="project-detail-header" data-aos="fade-up">
 
-        <span class="section-eyebrow">
-            PROJECT #{{ "%02d"|format(project.id) }}
-        </span>
+        <div class="project-detail-labels">
+
+            <span class="section-eyebrow">
+                PROJECT #{{ "%02d"|format(project.id) }}
+            </span>
+
+
+            {% if project.status == "completed" %}
+
+            <span class="project-status completed">
+                تکمیل شده
+            </span>
+
+            {% elif project.status == "in-progress" %}
+
+            <span class="project-status in-progress">
+                در حال توسعه
+            </span>
+
+            {% elif project.status == "planned" %}
+
+            <span class="project-status planned">
+                برنامه‌ریزی شده
+            </span>
+
+            {% endif %}
+
+        </div>
+
 
         <h1>
             {{ project.title }}
         </h1>
+
 
         <p>
             {{ project.description }}
@@ -65,48 +86,148 @@
     </header>
 
 
-    <!-- Content -->
+    <!-- Main Layout -->
 
     <div class="project-detail-layout">
 
-        <!-- Main -->
 
-        <main
-            class="project-detail-main"
-            data-aos="fade-up"
-        >
+        <!-- Main Content -->
 
-            <div class="project-detail-icon">
+        <main class="project-detail-main" data-aos="fade-up">
+
+            {% if project.image %}
+
+            <div class="project-detail-image">
+
+                <img src="{{ url_for(
+                        'static',
+                        filename='images/' ~ project.image
+                    ) }}" alt="{{ project.title }}">
+
+            </div>
+
+            {% else %}
+
+            <div class="project-detail-placeholder">
 
                 <i class="fa-solid fa-code"></i>
 
             </div>
 
+            {% endif %}
 
-            <h2>
-                درباره پروژه
-            </h2>
 
-            <p>
-                {{ project.description }}
-            </p>
+            <div class="project-detail-content">
+
+                <h2>
+                    درباره پروژه
+                </h2>
+
+                <p>
+                    {{ project.description }}
+                </p>
+
+
+                {% if project.features %}
+
+                <h2>
+                    قابلیت‌های اصلی
+                </h2>
+
+                <div class="project-features">
+
+                    {% for feature in project.features %}
+
+                    <div class="project-feature">
+
+                        <i class="fa-solid fa-check"></i>
+
+                        <span>
+                            {{ feature }}
+                        </span>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+            </div>
 
         </main>
 
 
         <!-- Sidebar -->
 
-        <aside
-            class="project-detail-sidebar"
-            data-aos="fade-up"
-            data-aos-delay="100"
-        >
+        <aside class="project-detail-sidebar" data-aos="fade-up" data-aos-delay="100">
+
+
+            <!-- Project Info -->
+
+            <div class="project-detail-box">
+
+                <h3>
+                    اطلاعات پروژه
+                </h3>
+
+
+                {% if project.year %}
+
+                <div class="project-info-row">
+
+                    <span>
+                        سال
+                    </span>
+
+                    <strong>
+                        {{ project.year }}
+                    </strong>
+
+                </div>
+
+                {% endif %}
+
+
+                {% if project.status %}
+
+                <div class="project-info-row">
+
+                    <span>
+                        وضعیت
+                    </span>
+
+                    <strong>
+
+                        {% if project.status == "completed" %}
+                        تکمیل شده
+
+                        {% elif project.status == "in-progress" %}
+                        در حال توسعه
+
+                        {% elif project.status == "planned" %}
+                        برنامه‌ریزی شده
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Technologies -->
 
             <div class="project-detail-box">
 
                 <h3>
                     تکنولوژی‌ها
                 </h3>
+
 
                 {% if project.technologies %}
 
@@ -127,6 +248,8 @@
             </div>
 
 
+            <!-- GitHub -->
+
             {% if project.github and project.github != "#" %}
 
             <div class="project-detail-box">
@@ -135,16 +258,13 @@
                     سورس پروژه
                 </h3>
 
-                <a
-                    href="{{ project.github }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="project-detail-github"
-                >
+                <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="project-detail-github">
 
                     <i class="fa-brands fa-github"></i>
 
-                    مشاهده در GitHub
+                    <span>
+                        مشاهده در GitHub
+                    </span>
 
                     <i class="fa-solid fa-arrow-left"></i>
 
@@ -153,6 +273,7 @@
             </div>
 
             {% endif %}
+
 
         </aside>
 

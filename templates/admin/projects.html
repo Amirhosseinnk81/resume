@@ -169,13 +169,19 @@ Projects
 
                             <!-- Delete -->
 
-                            <button type="button" class="btn btn-sm btn-outline-danger" disabled>
+                            <form method="POST"
+                                action="{{ url_for('admin.delete_project_view', project_id=project.id) }}"
+                                class="d-inline" onsubmit="return confirm('آیا از حذف این پروژه مطمئن هستید؟');">
 
-                                <i class="bi bi-trash me-1"></i>
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
 
-                                Delete
+                                    <i class="bi bi-trash"></i>
 
-                            </button>
+                                    Delete
+
+                                </button>
+
+                            </form>
 
                         </div>
 
