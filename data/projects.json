@@ -83,24 +83,5 @@
             "Hotel workflow management",
             "Admin dashboard"
         ]
-    },
-    {
-        "id": 5,
-        "title": "Test Advanced Project",
-        "description": "پروژه تست مدیریت حرفه‌ای",
-        "technologies": [
-            "Python",
-            "Flask",
-            "PostgreSQL"
-        ],
-        "github": "https://github.com/test/project",
-        "image": "profile.jpg",
-        "status": "completed",
-        "year": 2025,
-        "features": [
-            "Admin Dashboard",
-            "Authentication",
-            "Project Management"
-        ]
     }
 ]
