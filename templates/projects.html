@@ -24,19 +24,16 @@
 مشاهده پروژه‌های طراحی وب و نرم‌افزار انجام‌شده توسط من.
 {% endblock %}
 
-
 {% block content %}
 
-<section class="projects-page">
+<div class="projects-page">
 
-    <!-- ================================================
-         PAGE HEADER
-    ================================================= -->
+    <!-- Page Header -->
 
-    <header class="projects-page-header" data-aos="fade-up">
+    <div class="projects-page-header" data-aos="fade-up">
 
         <span class="section-eyebrow">
-            MY WORK
+            PROJECTS
         </span>
 
         <h1>
@@ -47,18 +44,71 @@
             {{ t.PAGE_PROJECTS_SUBTITLE }}
         </p>
 
-    </header>
+    </div>
 
 
-    <!-- ================================================
-         PROJECT GRID
-    ================================================= -->
+    <!-- Projects Grid -->
 
     <div class="projects-grid">
 
         {% for project in projects %}
 
-        <article class="project-page-card" data-aos="fade-up" data-aos-delay="{{ loop.index * 60 }}">
+        <article class="project-page-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+
+            <!-- Image -->
+
+            <div class="project-page-card-image">
+
+                {% if project.image %}
+
+                <img src="{{ url_for(
+                        'static',
+                        filename='images/' ~ project.image
+                    ) }}" alt="{{ project.title }}" loading="lazy">
+
+                {% else %}
+
+                <div class="project-page-placeholder">
+
+                    <i class="fa-solid fa-code"></i>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- Status -->
+
+                {% if project.status %}
+
+                <div class="project-page-status">
+
+                    {% if project.status == "completed" %}
+
+                    <span class="project-status completed">
+                        تکمیل شده
+                    </span>
+
+                    {% elif project.status == "in-progress" %}
+
+                    <span class="project-status in-progress">
+                        در حال توسعه
+                    </span>
+
+                    {% elif project.status == "planned" %}
+
+                    <span class="project-status planned">
+                        برنامه‌ریزی شده
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
 
             <!-- Card Header -->
 
@@ -70,11 +120,16 @@
 
                 </div>
 
+
+                {% if project.year %}
+
                 <span class="project-page-number">
 
-                    #{{ "%02d"|format(loop.index) }}
+                    {{ project.year }}
 
                 </span>
+
+                {% endif %}
 
             </div>
 
@@ -86,6 +141,7 @@
                 <h2>
                     {{ project.title }}
                 </h2>
+
 
                 <p>
                     {{ project.description }}
@@ -117,9 +173,13 @@
 
             <div class="project-page-card-footer">
 
+
+                <!-- GitHub -->
+
                 {% if project.github and project.github != "#" %}
 
-                <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="project-page-github">
+                <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="project-page-github"
+                    aria-label="مشاهده پروژه در GitHub">
 
                     <i class="fa-brands fa-github"></i>
 
@@ -135,15 +195,20 @@
 
                     <i class="fa-solid fa-lock"></i>
 
-                    پروژه خصوصی
+                    Private
 
                 </span>
 
                 {% endif %}
 
 
-                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="project-page-arrow"
-                    aria-label="مشاهده جزئیات {{ project.title }}">
+                <!-- Detail -->
+
+                <a href="{{ url_for(
+                        'project_detail',
+                        project_id=project.id
+                    ) }}" class="project-page-arrow" aria-label="مشاهده جزئیات {{ project.title }}"
+                    title="مشاهده جزئیات">
 
                     <i class="fa-solid fa-arrow-left"></i>
 
@@ -156,24 +221,22 @@
 
         {% else %}
 
-        <!-- ============================================
-             EMPTY STATE
-        ============================================= -->
+        <!-- Empty State -->
 
         <div class="projects-empty">
 
             <div class="projects-empty-icon">
 
-                <i class="fa-regular fa-folder-open"></i>
+                <i class="fa-solid fa-folder-open"></i>
 
             </div>
 
             <h2>
-                هنوز پروژه‌ای ثبت نشده است
+                پروژه‌ای موجود نیست
             </h2>
 
             <p>
-                در حال حاضر پروژه‌ای برای نمایش وجود ندارد.
+                هنوز پروژه‌ای برای نمایش ثبت نشده است.
             </p>
 
         </div>
@@ -182,6 +245,6 @@
 
     </div>
 
-</section>
+</div>
 
 {% endblock %}

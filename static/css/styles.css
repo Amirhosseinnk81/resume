@@ -3274,10 +3274,331 @@ h6 {
    PROJECTS PAGE
 ===================================================== */
 
-.projects-page {
-  padding-top: 35px;
+/* =====================================================
+PROJECT PAGE CARD - IMAGE
+===================================================== */
+
+.project-page-card-image {
+
+  position: relative;
+
+  width: 100%;
+  height: 190px;
+
+  overflow: hidden;
+
+  background: var(--bg);
 }
 
+.project-page-card-image img {
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition: transform 0.4s ease;
+}
+
+.project-page-card:hover .project-page-card-image img {
+
+  transform: scale(1.05);
+}
+
+
+/* =====================================================
+PROJECT PAGE CARD - IMAGE PLACEHOLDER
+===================================================== */
+
+.project-page-placeholder {
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  background: var(--bg);
+
+  color: var(--text-muted);
+
+  font-size: 36px;
+}
+
+
+/* =====================================================
+PROJECT PAGE CARD - STATUS
+===================================================== */
+
+.project-page-status {
+
+  position: absolute;
+
+  top: 15px;
+  right: 15px;
+
+  z-index: 2;
+}
+
+
+/* =====================================================
+PROJECT PAGE CARD - META
+===================================================== */
+
+.project-page-number {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  padding: 5px 9px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 7px;
+
+  background: var(--surface);
+
+  color: var(--text-muted);
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+
+/* =====================================================
+PROJECT PAGE CARD - CONTENT
+===================================================== */
+
+.project-page-card-content {
+
+  padding: 22px 24px;
+}
+
+.project-page-card-content h2 {
+
+  margin: 0 0 12px;
+
+  color: var(--text);
+
+  font-size: 19px;
+
+  font-weight: 750;
+
+  line-height: 1.7;
+}
+
+.project-page-card-content p {
+
+  display: -webkit-box;
+
+  overflow: hidden;
+
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 13px;
+
+  line-height: 2;
+
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+
+/* =====================================================
+PROJECT PAGE CARD - TECHNOLOGIES
+===================================================== */
+
+.project-page-technologies {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  margin-top: 20px;
+}
+
+.project-page-technology {
+
+  padding: 6px 9px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 7px;
+
+  background: var(--bg);
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.project-page-card:hover .project-page-technology {
+
+  border-color: rgba(37, 99, 235, 0.2);
+
+  color: var(--primary);
+
+}
+
+
+/* =====================================================
+PROJECT PAGE CARD - FOOTER
+===================================================== */
+
+.project-page-card-footer {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-top: auto;
+
+  padding: 15px 24px;
+
+  border-top: 1px solid var(--border);
+}
+
+
+/* =====================================================
+GITHUB
+===================================================== */
+
+.project-page-github {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: var(--text-muted);
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.project-page-github:hover {
+
+  color: var(--primary);
+
+  transform: translateY(-1px);
+}
+
+
+/* =====================================================
+PRIVATE
+===================================================== */
+
+.project-page-private {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: var(--text-muted);
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  opacity: 0.7;
+}
+
+
+/* =====================================================
+DETAIL ARROW
+===================================================== */
+
+.project-page-arrow {
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  border: 1px solid var(--border);
+
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: var(--text-muted);
+
+  transition: all 0.25s ease;
+}
+
+.project-page-arrow:hover {
+
+  border-color: var(--primary);
+
+  background: var(--primary);
+
+  color: #fff;
+
+  transform: translateX(-3px);
+}
+
+
+/* =====================================================
+RESPONSIVE
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .project-page-card-image {
+
+    height: 170px;
+
+  }
+
+  .project-page-card-content {
+
+    padding: 20px;
+
+  }
+
+  .project-page-card-footer {
+
+    padding: 14px 20px;
+
+  }
+
+}
 
 /* =====================================================
    PAGE HEADER
