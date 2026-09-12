@@ -1,0 +1,33 @@
+{
+  "socials": {
+    "github": "https://github.com/Amirhosseinnk81",
+    "linkedin": "https://www.linkedin.com/in/amirhossein-naeimaei-618451374/",
+    "twitter": "https://x.com/Amirnk_81"
+  },
+  "skills": [
+    {
+      "name": "Python",
+      "level": 72
+    },
+    {
+      "name": "Flask",
+      "level": 55
+    },
+    {
+      "name": "JavaScript",
+      "level": 10
+    },
+    {
+      "name": "Django",
+      "level": 53
+    },
+    {
+      "name": "Git&Github",
+      "level": 44
+    },
+    {
+      "name": "HTML/CSS",
+      "level": 43
+    }
+  ]
+}

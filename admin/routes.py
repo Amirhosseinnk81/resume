@@ -1,8 +1,8 @@
-from flask import render_template, request, redirect, url_for, session, flash
-from .dashboard_service import get_dashboard_stats
+from flask import render_template, request, redirect, url_for, session, flash, current_app
 import os
 from . import admin_bp
 from .decorators import login_required
+from .dashboard_service import get_dashboard_stats
 from repositories.project_repository import (
     get_projects,
     get_project_by_id,
@@ -10,6 +10,36 @@ from repositories.project_repository import (
     update_project,
     delete_project,
 )
+from repositories.article_repository import (
+    get_articles,
+    get_article_by_id,
+    create_article,
+    update_article,
+    delete_article,
+)
+from repositories.message_repository import (
+    get_messages,
+    get_message_by_id,
+    set_read,
+    delete_message,
+)
+from repositories.settings_repository import get_settings, update_settings
+
+ALLOWED_ARTICLE_EXTENSIONS = {"pdf"}
+
+
+def _allowed_article_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_ARTICLE_EXTENSIONS
+    )
+
+
+@admin_bp.context_processor
+def inject_unread_messages():
+    if not session.get("admin"):
+        return {}
+    return {"unread_messages": sum(1 for m in get_messages() if not m.get("read"))}
 
 
 @admin_bp.route("/")
@@ -374,16 +404,301 @@ def delete_project_view(project_id):
 @admin_bp.route("/articles")
 @login_required
 def articles():
-    return render_template("admin/articles.html", page_title="Articles")
+    articles = get_articles()
+    articles.sort(key=lambda a: a.get("id", 0), reverse=True)
+    return render_template(
+        "admin/articles.html", page_title="Articles", articles=articles
+    )
+
+
+@admin_bp.route("/articles/create", methods=["GET", "POST"])
+@login_required
+def create_article_view():
+
+    if request.method == "POST":
+
+        title = request.form.get("title", "").strip()
+        abstract = request.form.get("abstract", "").strip()
+        year_raw = request.form.get("year", "").strip()
+        language = request.form.get("language", "fa").strip()
+        image = request.form.get("image", "").strip()
+        file = request.files.get("file")
+
+        errors = []
+
+        if not title:
+            errors.append("عنوان مقاله الزامی است.")
+
+        if not abstract:
+            errors.append("چکیده مقاله الزامی است.")
+
+        year = None
+        if year_raw:
+            try:
+                year = int(year_raw)
+            except ValueError:
+                errors.append("سال انتشار باید عدد باشد.")
+
+        if not file or file.filename == "":
+            errors.append("فایل PDF مقاله الزامی است.")
+        elif not _allowed_article_file(file.filename):
+            errors.append("فقط فایل PDF مجاز است.")
+
+        if errors:
+            return render_template(
+                "admin/article_form.html",
+                page_title="Add Article",
+                errors=errors,
+                article={
+                    "title": title,
+                    "abstract": abstract,
+                    "year": year_raw,
+                    "language": language,
+                    "image": image,
+                },
+                edit_mode=False,
+            )
+
+        upload_folder = current_app.config["UPLOAD_FOLDER"]
+        os.makedirs(upload_folder, exist_ok=True)
+        filepath = os.path.join(upload_folder, file.filename)
+        file.save(filepath)
+
+        create_article({
+            "title": title,
+            "abstract": abstract,
+            "authors": session.get("admin", {}).get("username", ""),
+            "year": year,
+            "file": file.filename,
+            "language": language,
+            "image": image,
+        })
+
+        flash("مقاله با موفقیت اضافه شد.", "success")
+        return redirect(url_for("admin.articles"))
+
+    return render_template(
+        "admin/article_form.html",
+        page_title="Add Article",
+        errors=[],
+        article={},
+        edit_mode=False,
+    )
+
+
+@admin_bp.route("/articles/<int:article_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_article(article_id):
+
+    article = get_article_by_id(article_id)
+
+    if article is None:
+        return "Article not found", 404
+
+    if request.method == "POST":
+
+        title = request.form.get("title", "").strip()
+        abstract = request.form.get("abstract", "").strip()
+        year_raw = request.form.get("year", "").strip()
+        language = request.form.get("language", "fa").strip()
+        image = request.form.get("image", "").strip()
+        file = request.files.get("file")
+
+        errors = []
+
+        if not title:
+            errors.append("عنوان مقاله الزامی است.")
+
+        if not abstract:
+            errors.append("چکیده مقاله الزامی است.")
+
+        year = None
+        if year_raw:
+            try:
+                year = int(year_raw)
+            except ValueError:
+                errors.append("سال انتشار باید عدد باشد.")
+
+        # PDF replacement is optional on edit — keep the existing file if none uploaded
+        filename = article.get("file")
+        if file and file.filename:
+            if not _allowed_article_file(file.filename):
+                errors.append("فقط فایل PDF مجاز است.")
+            else:
+                filename = file.filename
+
+        if errors:
+            return render_template(
+                "admin/article_form.html",
+                page_title="Edit Article",
+                errors=errors,
+                article={
+                    "id": article_id,
+                    "title": title,
+                    "abstract": abstract,
+                    "year": year_raw,
+                    "language": language,
+                    "image": image,
+                    "file": article.get("file"),
+                },
+                edit_mode=True,
+            )
+
+        if file and file.filename and filename == file.filename:
+            upload_folder = current_app.config["UPLOAD_FOLDER"]
+            os.makedirs(upload_folder, exist_ok=True)
+            file.save(os.path.join(upload_folder, file.filename))
+
+        update_article(article_id, {
+            "title": title,
+            "abstract": abstract,
+            "authors": article.get("authors", ""),
+            "year": year,
+            "file": filename,
+            "language": language,
+            "image": image,
+        })
+
+        flash("مقاله با موفقیت به‌روزرسانی شد.", "success")
+        return redirect(url_for("admin.articles"))
+
+    return render_template(
+        "admin/article_form.html",
+        page_title="Edit Article",
+        errors=[],
+        article=article,
+        edit_mode=True,
+    )
+
+
+@admin_bp.route("/articles/<int:article_id>/delete", methods=["POST"])
+@login_required
+def delete_article_view(article_id):
+
+    deleted_article = delete_article(article_id)
+
+    if deleted_article is None:
+        flash("مقاله موردنظر پیدا نشد.", "danger")
+        return redirect(url_for("admin.articles"))
+
+    # Best-effort cleanup of the uploaded PDF — a missing file shouldn't block deletion
+    filename = deleted_article.get("file")
+    if filename:
+        filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+            except OSError:
+                pass
+
+    flash(f'مقاله "{deleted_article.get("title", "")}" با موفقیت حذف شد.', "success")
+    return redirect(url_for("admin.articles"))
 
 
 @admin_bp.route("/messages")
 @login_required
 def messages():
-    return render_template("admin/messages.html", page_title="Messages")
+    messages = get_messages()
+    messages.sort(key=lambda m: m.get("id", 0), reverse=True)
+    return render_template(
+        "admin/messages.html", page_title="Messages", messages=messages
+    )
 
 
-@admin_bp.route("/settings")
+@admin_bp.route("/messages/<int:message_id>/read", methods=["POST"])
+@login_required
+def toggle_message_read(message_id):
+
+    message = get_message_by_id(message_id)
+
+    if message is None:
+        flash("پیام موردنظر پیدا نشد.", "danger")
+        return redirect(url_for("admin.messages"))
+
+    set_read(message_id, read=not message.get("read", False))
+
+    return redirect(url_for("admin.messages"))
+
+
+@admin_bp.route("/messages/<int:message_id>/delete", methods=["POST"])
+@login_required
+def delete_message_view(message_id):
+
+    deleted_message = delete_message(message_id)
+
+    if deleted_message is None:
+        flash("پیام موردنظر پیدا نشد.", "danger")
+    else:
+        flash("پیام با موفقیت حذف شد.", "success")
+
+    return redirect(url_for("admin.messages"))
+
+
+@admin_bp.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
-    return render_template("admin/settings.html", page_title="Settings")
+
+    if request.method == "POST":
+
+        github = request.form.get("github", "").strip()
+        linkedin = request.form.get("linkedin", "").strip()
+        twitter = request.form.get("twitter", "").strip()
+
+        skill_names = request.form.getlist("skill_name[]")
+        skill_levels = request.form.getlist("skill_level[]")
+
+        skills = []
+        errors = []
+
+        for name, level_raw in zip(skill_names, skill_levels):
+            name = name.strip()
+            if not name:
+                continue
+
+            try:
+                level = int(level_raw)
+            except (TypeError, ValueError):
+                errors.append(f'سطح مهارت "{name}" باید عدد باشد.')
+                continue
+
+            if not (0 <= level <= 100):
+                errors.append(f'سطح مهارت "{name}" باید بین ۰ تا ۱۰۰ باشد.')
+                continue
+
+            skills.append({"name": name, "level": level})
+
+        resume_file = request.files.get("resume")
+        if resume_file and resume_file.filename:
+            if resume_file.filename.rsplit(".", 1)[-1].lower() != "pdf":
+                errors.append("فایل رزومه باید PDF باشد.")
+
+        if errors:
+            settings = get_settings()
+            return render_template(
+                "admin/settings.html",
+                page_title="Settings",
+                settings={
+                    "socials": {"github": github, "linkedin": linkedin, "twitter": twitter},
+                    "skills": skills or settings["skills"],
+                },
+                errors=errors,
+            )
+
+        update_settings({
+            "socials": {"github": github, "linkedin": linkedin, "twitter": twitter},
+            "skills": skills,
+        })
+
+        if resume_file and resume_file.filename:
+            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            resume_file.save(os.path.join(base_dir, "myresume.pdf"))
+
+        flash("تنظیمات با موفقیت ذخیره شد.", "success")
+        return redirect(url_for("admin.settings"))
+
+    return render_template(
+        "admin/settings.html",
+        page_title="Settings",
+        settings=get_settings(),
+        errors=[],
+    )
