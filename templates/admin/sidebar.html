@@ -37,12 +37,17 @@
 
         </a>
 
-        <a class="list-group-item list-group-item-action"
+        <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
            href="{{ url_for('admin.messages') }}">
 
-            <i class="bi bi-envelope"></i>
+            <span>
+                <i class="bi bi-envelope"></i>
+                Messages
+            </span>
 
-            Messages
+            {% if unread_messages %}
+            <span class="badge bg-danger rounded-pill">{{ unread_messages }}</span>
+            {% endif %}
 
         </a>
 

@@ -1,27 +1,35 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session 
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from datetime import datetime
 from flask_mail import Mail, Message
 from flask import send_from_directory
-import json
-from admin import admin_bp
 from dotenv import load_dotenv
-import os
-import json
+
+# Load .env BEFORE anything below reads an environment variable — previously
+# SECRET_KEY was read one line too early and always fell back to the default.
+load_dotenv()
+
+from admin import admin_bp
 from repositories.project_repository import get_projects
+from repositories.article_repository import (
+    get_articles as repo_get_articles,
+    get_article_by_id,
+    increment_views,
+)
+from repositories.message_repository import create_message
+from repositories.settings_repository import get_settings
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
 
-load_dotenv()
-
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'amirhossein.naimaei81@gmail.com'     # ایمیل خودت
-app.config['MAIL_PASSWORD'] = 'nuaa kqmd xqmo xrwp'        # پسورد اپ (نه رمز اصلی!)
-app.config['MAIL_DEFAULT_SENDER'] = 'barokfinancial@gmail.com'
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER")
+
+CONTACT_RECIPIENT_EMAIL = os.getenv("CONTACT_RECIPIENT_EMAIL")
 
 mail = Mail(app)
 app.register_blueprint(admin_bp)
@@ -92,19 +100,8 @@ TAGLINE = "توسعه‌دهندهٔ بک‌اند | Flask | Python"
 LOCATION = "نوشهر"
 CONTACT_EMAIL = "amirhossein.naimaei81@gmail.com"
 
-SOCIALS = {
-    "github": "https://github.com/Amirhosseinnk81",
-    "linkedin": "https://www.linkedin.com/in/amirhossein-naeimaei-618451374/",
-    "twitter": "https://x.com/Amirnk_81",
-}
-SKILLS = [
-{"name": "Python", "level": 72},
-{"name": "Flask", "level": 55},
-{"name": "JavaScript", "level": 10},
-{"name": "Django", "level": 53},
-{"name": "Git&Github", "level": 44},
-{"name": "HTML/CSS", "level": 43}
-]
+# SOCIALS and SKILLS now live in data/settings.json (editable from
+# /admin/settings) instead of being hardcoded here. See repositories/settings_repository.py.
 
 
 EXPERIENCES = [
@@ -158,18 +155,19 @@ def set_lang():
 @app.context_processor
 def inject_globals():
     lang = session.get('lang', 'fa')
+    settings = get_settings()
     return dict(
         SITE_TITLE=SITE_TITLE,
         NAME=NAME,
         TAGLINE=TAGLINE,
-        SOCIALS=SOCIALS,
+        SOCIALS=settings["socials"],
         year=datetime.now().year,
+        current_year=datetime.now().year,
         t=translations[lang],
         lang=lang,
 )
-    
-    
-    
+
+
 @app.route("/lang/<code>")
 def switch_lang(code):
     if code in translations:
@@ -179,35 +177,16 @@ def switch_lang(code):
         request.referrer or url_for("home")
     )
 
-@app.context_processor
-def inject_global_variables():
-
-    return {
-        "current_year": datetime.now().year,
-        "NAME": NAME,
-        "SOCIALS": SOCIALS
-    }
-
 @app.route("/")
 def home():
 
     projects = get_projects()
-
-    with open(
-        os.path.join(
-            app.root_path,
-            "data",
-            "articles.json"
-        ),
-        "r",
-        encoding="utf-8"
-    ) as f:
-
-        articles = json.load(f)
+    articles = repo_get_articles()
+    settings = get_settings()
 
     return render_template(
         "index.html",
-        skills=SKILLS,
+        skills=settings["skills"],
         projects=projects,
         articles=articles,
         profile=profile
@@ -248,50 +227,21 @@ def project_detail(project_id):
 @app.route("/about")
 def about():
 
+    settings = get_settings()
+
     return render_template(
         "about.html",
         experiences=EXPERIENCES,
         education=EDUCATION,
-        skills=SKILLS
+        skills=settings["skills"]
     )
-
-def get_articles():
-
-    articles_file = os.path.join(
-        app.root_path,
-        "data",
-        "articles.json"
-    )
-
-    if not os.path.exists(articles_file):
-        return []
-
-    with open(
-        articles_file,
-        "r",
-        encoding="utf-8"
-    ) as f:
-
-        return json.load(f)
 
 @app.route("/articles")
 def articles():
 
-    with open(
-        "data/articles.json",
-        encoding="utf-8"
-    ) as f:
-
-        articles = json.load(f)
-
-        for a in articles:
-
-            if "views" not in a:
-                a["views"] = 0
-
     return render_template(
         "articles.html",
-        articles=articles
+        articles=repo_get_articles()
     )
 
 
@@ -305,64 +255,23 @@ def download_article(filename):
     )
 
 
-@app.route("/articles/add", methods=["GET", "POST"])
-def add_article():
-    if request.method == "POST":
-        title = request.form["title"]
-        abstract = request.form["abstract"]
-        year = request.form["year"]
-        file = request.files["file"]
-
-        if file and allowed_file(file.filename):
-            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-            file.save(filepath)
-
-            with open("data/articles.json", encoding="utf-8") as f:
-                articles = json.load(f)
-
-            articles.append({
-                "id": len(articles) + 1,
-                "title": title,
-                "abstract": abstract,
-                "authors": NAME,
-                "year": year,
-                "file": file.filename,
-                "language": session.get("lang", "fa")
-            })
-
-            with open("data/articles.json", "w", encoding="utf-8") as f:
-                json.dump(articles, f, ensure_ascii=False, indent=2)
-
-            flash("مقاله با موفقیت اضافه شد", "success")
-            return redirect(url_for("articles"))
-
-    return render_template("add_article.html")
-
 @app.route("/articles/<int:article_id>")
 def article_detail(article_id):
-    with open("data/articles.json", encoding="utf-8") as f:
-        articles = json.load(f)
 
-    article = next((a for a in articles if a["id"] == article_id), None)
+    article = get_article_by_id(article_id)
 
     if not article:
         flash("مقاله مورد نظر پیدا نشد", "danger")
-        return redirect(url_for("articles"))  
+        return redirect(url_for("articles"))
 
-    # افزایش تعداد بازدید
-    if "views" in article:
-        article["views"] += 1
-    else:
-        article["views"] = 1
-
-    # ذخیره مجدد JSON
-    with open("data/articles.json", "w", encoding="utf-8") as f:
-        json.dump(articles, f, ensure_ascii=False, indent=2)
+    article = increment_views(article_id)
 
     return render_template("article_detail.html", article=article, lang="fa")
 
 
+# Note: adding/editing/deleting articles now happens only in the admin panel
+# (/admin/articles) — the old public, unauthenticated /articles/add route
+# (which also pointed at a template that didn't exist) has been removed.
 
 
 @app.route("/contact", methods=["GET", "POST"])
@@ -371,23 +280,27 @@ def contact():
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
         message = request.form.get("message", "").strip()
-        
+
         if not name or not email or not message:
             flash("لطفاً همهٔ فیلدها را پر کنید.", "danger")
             return redirect(url_for("contact"))
 
-        # ذخیره در فایل CSV
-        os.makedirs("data", exist_ok=True)
-        with open("data/messages.csv", "a", encoding="utf-8") as f:
-            f.write(f"{datetime.now().isoformat()},{name},{email},{message}\n")
+        # Always save the message first, regardless of whether email sending works,
+        # so a submission is never silently lost.
+        create_message(name, email, message)
 
-        # ارسال ایمیل
-        msg = Message(
-            subject=f"پیام جدید از {name}",
-            recipients=["barokfinancial@gmail.com"],  # جایی که می‌خوای ایمیل بیاد
-            body=f"From: {name} <{email}>\n\n{message}"
-        )
-        mail.send(msg)
+        try:
+            msg = Message(
+                subject=f"پیام جدید از {name}",
+                recipients=[CONTACT_RECIPIENT_EMAIL],
+                body=f"From: {name} <{email}>\n\n{message}"
+            )
+            mail.send(msg)
+        except Exception:
+            # Message is safely stored in data/messages.json and visible in
+            # /admin/messages even if the SMTP send fails (bad credentials,
+            # network issue, etc.) — don't 500 the page on the visitor.
+            app.logger.exception("Failed to send contact-form notification email")
 
         flash("پیام شما با موفقیت ارسال شد!", "success")
         return redirect(url_for("contact"))

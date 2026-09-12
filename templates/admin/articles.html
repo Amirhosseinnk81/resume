@@ -3,5 +3,164 @@
 {% block title %}Articles{% endblock %}
 
 {% block content %}
-<h1>Articles</h1>
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h3 class="fw-bold mb-1">
+                Articles
+            </h3>
+
+            <p class="text-muted mb-0">
+                Manage your published papers and articles.
+            </p>
+
+        </div>
+
+
+        <a href="{{ url_for('admin.create_article_view') }}" class="btn btn-primary">
+
+            <i class="bi bi-plus-lg me-1"></i>
+
+            Add Article
+
+        </a>
+
+    </div>
+
+
+    <!-- Articles -->
+
+    {% if articles %}
+
+    <div class="row g-4">
+
+        {% for article in articles %}
+
+        <div class="col-12 col-md-6 col-xl-4">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body d-flex flex-column">
+
+
+                    <!-- Article Header -->
+
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                {{ article.title }}
+                            </h5>
+
+                            <small class="text-muted">
+                                {{ article.authors }} · {{ article.year or "—" }}
+                            </small>
+
+                        </div>
+
+                        <span class="badge bg-{{ 'info' if article.language == 'en' else 'secondary' }}">
+                            {{ "EN" if article.language == "en" else "FA" }}
+                        </span>
+
+                    </div>
+
+
+                    <!-- Abstract -->
+
+                    <p class="text-muted">
+                        {{ article.abstract | truncate(140) }}
+                    </p>
+
+
+                    <!-- Spacer -->
+
+                    <div class="mt-auto">
+
+                        <div class="mb-3 small text-muted">
+                            <i class="bi bi-eye me-1"></i>
+                            {{ article.views or 0 }} views
+                        </div>
+
+                        <!-- Actions -->
+
+                        <div class="d-flex gap-2">
+
+                            <a href="{{ url_for('article_detail', article_id=article.id) }}"
+                                target="_blank" rel="noopener noreferrer"
+                                class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                View
+                            </a>
+
+                            <a href="{{ url_for('admin.edit_article', article_id=article.id) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil me-1"></i>
+                                Edit
+                            </a>
+
+                            <form method="POST"
+                                action="{{ url_for('admin.delete_article_view', article_id=article.id) }}"
+                                class="d-inline" onsubmit="return confirm('آیا از حذف این مقاله مطمئن هستید؟');">
+
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <!-- Empty State -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+            <div class="mb-3">
+                <i class="bi bi-journal-text" style="font-size: 3rem;"></i>
+            </div>
+
+            <h5 class="fw-bold">
+                No Articles Found
+            </h5>
+
+            <p class="text-muted">
+                You haven't added any articles yet.
+            </p>
+
+            <a href="{{ url_for('admin.create_article_view') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>
+                Add Your First Article
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
 {% endblock %}
