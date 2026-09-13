@@ -50,21 +50,31 @@
 
 <hr class="my-4" />
 
-<div class="h5 mb-3">
+<div class="mb-3">
     <div class="col-12">
-        <h4 class="mb-3">{{ t.MENU_SKILLS }}</h4>
-        <ul class="timeline list-unstyled">
+        <h4 class="mb-4">{{ t.MENU_SKILLS }}</h4>
+        <div class="skills-grid">
             {% for s in skills %}
-            <li class="mb-4 fade-item" data-aos="fade-up">
-                <div class="fw-bold">{{ s.name }}</div>
-                <div class="progress mt-2">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ s.level }}%">
-                        {{ s.level }}%
+            {% set meta = s.name | skill_icon %}
+            <div class="skill-card" style="--skill-color: #{{ meta.color }};">
+                <div class="skill-card-top">
+                    <div class="skill-identity">
+                        {% if meta.icon %}
+                        <img class="skill-icon" src="https://cdn.simpleicons.org/{{ meta.icon }}/{{ meta.color }}"
+                            alt="" loading="lazy">
+                        {% endif %}
+                        <span class="skill-name">{{ s.name }}</span>
                     </div>
+                    <span class="skill-level">{{ s.level }}%</span>
                 </div>
-            </li>
+                <div class="skill-gauge">
+                    {% for segment in range(10) %}
+                    <span class="skill-gauge-segment{% if segment < (s.level // 10) %} is-filled{% endif %}"></span>
+                    {% endfor %}
+                </div>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
     </div>
 </div>
 {% endblock %}

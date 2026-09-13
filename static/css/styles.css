@@ -1250,6 +1250,89 @@ h6 {
 
 
 /* =====================================================
+   SKILLS GRID
+===================================================== */
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.skill-card {
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+  padding: 1.25rem 1.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition),
+    border-color var(--transition);
+}
+
+.skill-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--skill-color, var(--primary));
+}
+
+.skill-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.skill-identity {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  min-width: 0;
+}
+
+.skill-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.skill-name {
+  font-weight: 700;
+  font-size: .98rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skill-level {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--skill-color, var(--primary));
+  direction: ltr;
+}
+
+.skill-gauge {
+  display: flex;
+  gap: 4px;
+  direction: ltr;
+}
+
+.skill-gauge-segment {
+  flex: 1;
+  height: 7px;
+  border-radius: 3px;
+  background: var(--border);
+}
+
+.skill-gauge-segment.is-filled {
+  background: var(--skill-color, var(--primary));
+}
+
+/* =====================================================
    FADE ANIMATION
 ===================================================== */
 

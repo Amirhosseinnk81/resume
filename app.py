@@ -109,6 +109,40 @@ translations = {
 }
 }
 
+SKILL_ICON_MAP = {
+    "python": ("python", "3776AB"),
+    "flask": ("flask", "64748b"),
+    "javascript": ("javascript", "F7DF1E"),
+    "js": ("javascript", "F7DF1E"),
+    "django": ("django", "092E20"),
+    "git": ("git", "F05032"),
+    "git&github": ("git", "F05032"),
+    "github": ("github", "181717"),
+    "html": ("html5", "E34F26"),
+    "html/css": ("html5", "E34F26"),
+    "css": ("css3", "1572B6"),
+    "sql": ("mysql", "4479A1"),
+    "mysql": ("mysql", "4479A1"),
+    "postgresql": ("postgresql", "4169E1"),
+    "docker": ("docker", "2496ED"),
+    "react": ("react", "61DAFB"),
+    "vue": ("vuedotjs", "4FC08D"),
+    "linux": ("linux", "FCC624"),
+    "nginx": ("nginx", "009639"),
+    "redis": ("redis", "DC382D"),
+    "typescript": ("typescript", "3178C6"),
+    "bootstrap": ("bootstrap", "7952B3"),
+    "tailwind": ("tailwindcss", "06B6D4"),
+}
+
+
+def get_skill_icon(name):
+    icon, color = SKILL_ICON_MAP.get((name or "").strip().lower(), (None, "2563eb"))
+    return {"icon": icon, "color": color}
+
+
+app.jinja_env.filters["skill_icon"] = get_skill_icon
+
 profile = {
 "name": "امیرحسین نعیمائی",
 "job": "توسعه‌دهنده بک‌اند (Python/Flask)",
