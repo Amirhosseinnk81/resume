@@ -194,7 +194,7 @@ def inject_globals():
 @app.route("/lang/<code>")
 def switch_lang(code):
     if code in translations:
-        session["lang"] = code  
+        session["lang"] = code
 
     return redirect(
         request.referrer or url_for("home")
@@ -343,6 +343,16 @@ def toggle_lang():
     current = session.get("lang", "fa")
     session["lang"] = "en" if current == "fa" else "fa"
     return redirect(request.referrer or url_for("home"))
+
+@app.route("/robots.txt")
+def robots_txt():
+    return send_from_directory(app.root_path, "robots.txt")
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    return send_from_directory(app.root_path, "sitemap.xml", mimetype="application/xml")
+
 
 @app.route("/resume")
 def download_resume():
