@@ -1,9 +1,13 @@
 import json
 import os
+import threading
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 ARTICLES_FILE = os.path.join(BASE_DIR, "data", "articles.json")
+
+# See project_repository.py for why this lock exists (process-local only).
+_lock = threading.Lock()
 
 
 def get_articles():
@@ -43,72 +47,80 @@ def _save(articles):
 
 def create_article(article):
 
-    articles = get_articles()
+    with _lock:
 
-    if articles:
-        new_id = max(a.get("id", 0) for a in articles) + 1
-    else:
-        new_id = 1
+        articles = get_articles()
 
-    article["id"] = new_id
-    article.setdefault("views", 0)
+        if articles:
+            new_id = max(a.get("id", 0) for a in articles) + 1
+        else:
+            new_id = 1
 
-    articles.append(article)
+        article["id"] = new_id
+        article.setdefault("views", 0)
 
-    _save(articles)
+        articles.append(article)
 
-    return article
+        _save(articles)
+
+        return article
 
 
 def update_article(article_id, updated_data):
 
-    articles = get_articles()
+    with _lock:
 
-    for index, article in enumerate(articles):
+        articles = get_articles()
 
-        if article.get("id") == article_id:
+        for index, article in enumerate(articles):
 
-            updated_data["id"] = article_id
-            updated_data.setdefault("views", article.get("views", 0))
+            if article.get("id") == article_id:
 
-            articles[index] = updated_data
+                updated_data["id"] = article_id
+                updated_data.setdefault("views", article.get("views", 0))
 
-            _save(articles)
+                articles[index] = updated_data
 
-            return updated_data
+                _save(articles)
 
-    return None
+                return updated_data
+
+        return None
 
 
 def delete_article(article_id):
 
-    articles = get_articles()
+    with _lock:
 
-    for index, article in enumerate(articles):
+        articles = get_articles()
 
-        if article.get("id") == article_id:
+        for index, article in enumerate(articles):
 
-            deleted_article = articles.pop(index)
+            if article.get("id") == article_id:
 
-            _save(articles)
+                deleted_article = articles.pop(index)
 
-            return deleted_article
+                _save(articles)
 
-    return None
+                return deleted_article
+
+        return None
 
 
 def increment_views(article_id):
 
-    articles = get_articles()
+    with _lock:
 
-    for article in articles:
+        articles = get_articles()
 
-        if article.get("id") == article_id:
+        for article in articles:
 
-            article["views"] = article.get("views", 0) + 1
+            if article.get("id") == article_id:
 
-            _save(articles)
+                article["views"] = article.get("views", 0) + 1
 
-            return article
+                _save(articles)
 
-    return None
+                return article
+
+        return None

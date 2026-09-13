@@ -79,12 +79,16 @@
                     'admin.edit_project',
                     project_id=project.id
                 ) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
 
                 {% else %}
 
                 <form method="POST" action="{{ url_for(
                     'admin.create_project_view'
                 ) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
 
                     {% endif %}
 

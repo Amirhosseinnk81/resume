@@ -4,11 +4,13 @@ from datetime import datetime
 from flask_mail import Mail, Message
 from flask import send_from_directory
 from dotenv import load_dotenv
+from flask_wtf.csrf import CSRFError
 
 # Load .env BEFORE anything below reads an environment variable — previously
 # SECRET_KEY was read one line too early and always fell back to the default.
 load_dotenv()
 
+from extensions import csrf, limiter
 from admin import admin_bp
 from repositories.project_repository import get_projects
 from repositories.article_repository import (
@@ -32,6 +34,24 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER")
 CONTACT_RECIPIENT_EMAIL = os.getenv("CONTACT_RECIPIENT_EMAIL")
 
 mail = Mail(app)
+
+# --- CSRF protection ---------------------------------------------------
+# Every POST form in the project (login, contact, all admin create/edit/
+# delete actions) previously had no CSRF token, so a malicious external
+# page could trick a logged-in admin's browser into submitting a real
+# delete/edit request. CSRFProtect checks a token on every POST/PUT/DELETE
+# automatically; templates just need {{ csrf_token() }} in each <form>.
+csrf.init_app(app)
+
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(error):
+    flash("نشست شما منقضی شده یا نامعتبر است، لطفاً دوباره تلاش کنید.", "danger")
+    return redirect(request.referrer or url_for("home")), 400
+
+
+limiter.init_app(app)
+
 app.register_blueprint(admin_bp)
 
 
@@ -39,6 +59,9 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads", "articles")
 ALLOWED_EXTENSIONS = {"pdf"}
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# No upload was size-limited before — a single request could exhaust disk space.
+app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -171,7 +194,7 @@ def inject_globals():
 @app.route("/lang/<code>")
 def switch_lang(code):
     if code in translations:
-        session["lang"] = code
+        session["lang"] = code  
 
     return redirect(
         request.referrer or url_for("home")
@@ -275,8 +298,16 @@ def article_detail(article_id):
 
 
 @app.route("/contact", methods=["GET", "POST"])
+@limiter.limit("5 per hour", methods=["POST"])
 def contact():
     if request.method == "POST":
+
+        # Honeypot: a hidden field real visitors never see or fill in.
+        # If it's non-empty, a bot filled it — silently pretend success.
+        if request.form.get("website", "").strip():
+            flash("پیام شما با موفقیت ارسال شد!", "success")
+            return redirect(url_for("contact"))
+
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
         message = request.form.get("message", "").strip()
@@ -311,11 +342,21 @@ def contact():
 def toggle_lang():
     current = session.get("lang", "fa")
     session["lang"] = "en" if current == "fa" else "fa"
-    return redirect(request.referrer or url_for("index"))
+    return redirect(request.referrer or url_for("home"))
 
 @app.route("/resume")
 def download_resume():
     return send_from_directory(os.path.dirname(os.path.abspath(__file__)), "myresume.pdf", as_attachment=True)
 
+@app.errorhandler(413)
+def file_too_large(error):
+    flash("حجم فایل ارسالی بیش از حد مجاز (۲۰ مگابایت) است.", "danger")
+    return redirect(request.referrer or url_for("home")), 413
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    # FLASK_DEBUG must be explicitly set to "1" to enable the interactive
+    # debugger — it was previously hardcoded to True, which is a remote
+    # code execution risk if this is ever run in production via `python app.py`.
+    # For real deployment, run behind a proper WSGI server (gunicorn/waitress)
+    # rather than this development server either way.
+    app.run(debug=os.getenv("FLASK_DEBUG") == "1")

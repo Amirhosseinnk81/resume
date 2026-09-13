@@ -1,10 +1,15 @@
 import json
 import os
+import threading
 from datetime import datetime
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 MESSAGES_FILE = os.path.join(BASE_DIR, "data", "messages.json")
+
+# See project_repository.py for why this lock exists (process-local only).
+# Especially relevant here since the contact form is public-facing.
+_lock = threading.Lock()
 
 
 def get_messages():
@@ -41,55 +46,61 @@ def _save(messages):
 
 def create_message(name, email, body):
 
-    messages = get_messages()
+    with _lock:
 
-    new_id = max((m.get("id", 0) for m in messages), default=0) + 1
+        messages = get_messages()
 
-    message = {
-        "id": new_id,
-        "name": name,
-        "email": email,
-        "message": body,
-        "created_at": datetime.now().isoformat(timespec="seconds"),
-        "read": False,
-    }
+        new_id = max((m.get("id", 0) for m in messages), default=0) + 1
 
-    messages.append(message)
+        message = {
+            "id": new_id,
+            "name": name,
+            "email": email,
+            "message": body,
+            "created_at": datetime.now().isoformat(timespec="seconds"),
+            "read": False,
+        }
 
-    _save(messages)
+        messages.append(message)
 
-    return message
+        _save(messages)
+
+        return message
 
 
 def set_read(message_id, read=True):
 
-    messages = get_messages()
+    with _lock:
 
-    for message in messages:
+        messages = get_messages()
 
-        if message.get("id") == message_id:
+        for message in messages:
 
-            message["read"] = read
+            if message.get("id") == message_id:
 
-            _save(messages)
+                message["read"] = read
 
-            return message
+                _save(messages)
 
-    return None
+                return message
+
+        return None
 
 
 def delete_message(message_id):
 
-    messages = get_messages()
+    with _lock:
 
-    for index, message in enumerate(messages):
+        messages = get_messages()
 
-        if message.get("id") == message_id:
+        for index, message in enumerate(messages):
 
-            deleted_message = messages.pop(index)
+            if message.get("id") == message_id:
 
-            _save(messages)
+                deleted_message = messages.pop(index)
 
-            return deleted_message
+                _save(messages)
 
-    return None
+                return deleted_message
+
+        return None
