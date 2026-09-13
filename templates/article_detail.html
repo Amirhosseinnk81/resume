@@ -1,5 +1,29 @@
 {% extends "base.html" %}
 
+{% block title %}
+{{ article.title }} | امیرحسین نعیمائی
+{% endblock %}
+
+{% block meta_description %}
+{{ article.abstract }}
+{% endblock %}
+
+{% block og_title %}
+{{ article.title }}
+{% endblock %}
+
+{% block og_desc %}
+{{ article.abstract }}
+{% endblock %}
+
+{% block tw_title %}
+{{ article.title }}
+{% endblock %}
+
+{% block tw_desc %}
+{{ article.abstract }}
+{% endblock %}
+
 {% block content %}
 <section class="container my-5">
 
@@ -19,7 +43,7 @@
   {% if article.image %}
   <div class="mb-4 text-center position-relative">
     <img src="{{ url_for('static', filename='images/' ~ article.image) }}" class="img-fluid rounded shadow-sm"
-      alt="{{ article.title }}">
+      alt="{{ article.title }}" loading="lazy">
 
     <span class="position-absolute top-0 end-0 m-2 px-2 py-1 bg-light text-muted small rounded shadow-sm">
       {{ article.views }} {{ "بازدید" if lang == "fa" else "views" }}

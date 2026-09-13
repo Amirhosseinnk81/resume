@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% block title %}
+{{ "مقالات و انتشارات" if lang == "fa" else "Articles & Publications" }} | امیرحسین نعیمائی
+{% endblock %}
+
+{% block meta_description %}
+{{ "فهرست مقالات و انتشارات علمی امیرحسین نعیمائی در حوزه نرم‌افزار و هوش مصنوعی." if lang == "fa" else "List of published articles and papers by Amirhossein Naeimaei." }}
+{% endblock %}
+
 {% block content %}
 <section class="container my-5">
 
@@ -14,10 +22,10 @@
             <div class="card h-100 shadow-sm">
                 {% if article.image %}
                 <img src="{{ url_for('static', filename='images/' ~ article.image) }}" class="card-img-top"
-                    alt="{{ article.title }}">
+                    alt="{{ article.title }}" loading="lazy">
                 {% else %}
                 <img src="{{ url_for('static', filename='images/default.png') }}" class="card-img-top"
-                    alt="{{ article.title }}">
+                    alt="{{ article.title }}" loading="lazy">
                 {% endif %}
 
                 <div class="card-body d-flex flex-column">
