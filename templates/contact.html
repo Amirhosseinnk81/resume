@@ -11,6 +11,14 @@
 {% block content %}
 <h1 class="h3 mb-4">{{ t.CONTACT_TITLE }}</h1>
 <form method="post" class="row g-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Honeypot: hidden from real visitors via CSS, bots tend to fill every field -->
+    <div style="position:absolute; left:-9999px;" aria-hidden="true">
+        <label for="website">Website</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
     <div class="col-md-6">
         <label class="form-label">{{ t.CONTACT_NAME }}</label>
         <input name="name" class="form-control" required />

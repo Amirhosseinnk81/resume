@@ -108,6 +108,8 @@
                             <form method="POST"
                                 action="{{ url_for('admin.delete_article_view', article_id=article.id) }}"
                                 class="d-inline" onsubmit="return confirm('آیا از حذف این مقاله مطمئن هستید؟');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
 
                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                     <i class="bi bi-trash"></i>

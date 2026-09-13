@@ -1,9 +1,13 @@
 import json
 import os
+import threading
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 SETTINGS_FILE = os.path.join(BASE_DIR, "data", "settings.json")
+
+# See project_repository.py for why this lock exists (process-local only).
+_lock = threading.Lock()
 
 DEFAULT_SETTINGS = {
     "socials": {
@@ -43,12 +47,14 @@ def get_settings():
 
 def update_settings(new_settings):
 
-    settings = get_settings()
+    with _lock:
 
-    settings.update(new_settings)
+        settings = get_settings()
 
-    with open(SETTINGS_FILE, "w", encoding="utf-8") as file:
+        settings.update(new_settings)
 
-        json.dump(settings, file, ensure_ascii=False, indent=2)
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as file:
 
-    return settings
+            json.dump(settings, file, ensure_ascii=False, indent=2)
+
+        return settings

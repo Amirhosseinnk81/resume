@@ -78,12 +78,16 @@
             <form method="POST"
                 action="{{ url_for('admin.edit_article', article_id=article.id) }}"
                 enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
 
                 {% else %}
 
                 <form method="POST"
                     action="{{ url_for('admin.create_article_view') }}"
                     enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
 
                     {% endif %}
 

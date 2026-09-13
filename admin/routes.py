@@ -1,5 +1,9 @@
 from flask import render_template, request, redirect, url_for, session, flash, current_app
 import os
+import uuid
+import hmac
+from werkzeug.security import check_password_hash
+from extensions import limiter
 from . import admin_bp
 from .decorators import login_required
 from .dashboard_service import get_dashboard_stats
@@ -35,6 +39,32 @@ def _allowed_article_file(filename):
     )
 
 
+def _safe_upload_filename(filename, upload_folder):
+    """
+    Sanitize an uploaded filename for saving to disk.
+
+    Werkzeug's secure_filename() strips non-ASCII characters, which would
+    mangle the Persian filenames this project actually uses. Instead we:
+      1. Strip any directory components (os.path.basename) to block path
+         traversal (e.g. "../../etc/passwd").
+      2. Prefix with a short random id to prevent one upload silently
+         overwriting another article's file when two uploads share a name.
+    """
+    base_name = os.path.basename(filename).strip()
+
+    if not base_name or base_name in (".", ".."):
+        base_name = "file.pdf"
+
+    safe_name = f"{uuid.uuid4().hex[:8]}_{base_name}"
+
+    # Defense in depth: confirm the resolved path still lands inside upload_folder.
+    resolved = os.path.abspath(os.path.join(upload_folder, safe_name))
+    if not resolved.startswith(os.path.abspath(upload_folder) + os.sep):
+        raise ValueError("Unsafe filename")
+
+    return safe_name
+
+
 @admin_bp.context_processor
 def inject_unread_messages():
     if not session.get("admin"):
@@ -52,16 +82,28 @@ def dashboard():
 
 
 @admin_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
 def login():
 
     if request.method == "POST":
 
-        username = request.form.get("username")
-        password = request.form.get("password")
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
 
-        if username == os.getenv("ADMIN_USERNAME") and password == os.getenv(
-            "ADMIN_PASSWORD"
-        ):
+        admin_username = os.getenv("ADMIN_USERNAME", "")
+        admin_password_hash = os.getenv("ADMIN_PASSWORD_HASH", "")
+
+        username_ok = hmac.compare_digest(username, admin_username)
+
+        password_ok = False
+        if admin_password_hash:
+            try:
+                password_ok = check_password_hash(admin_password_hash, password)
+            except ValueError:
+                # Malformed hash in .env — treat as "no valid credential configured"
+                password_ok = False
+
+        if username_ok and password_ok:
 
             session["admin"] = {"username": username}
 
@@ -461,15 +503,33 @@ def create_article_view():
 
         upload_folder = current_app.config["UPLOAD_FOLDER"]
         os.makedirs(upload_folder, exist_ok=True)
-        filepath = os.path.join(upload_folder, file.filename)
-        file.save(filepath)
+
+        try:
+            safe_filename = _safe_upload_filename(file.filename, upload_folder)
+        except ValueError:
+            errors.append("نام فایل نامعتبر است.")
+            return render_template(
+                "admin/article_form.html",
+                page_title="Add Article",
+                errors=errors,
+                article={
+                    "title": title,
+                    "abstract": abstract,
+                    "year": year_raw,
+                    "language": language,
+                    "image": image,
+                },
+                edit_mode=False,
+            )
+
+        file.save(os.path.join(upload_folder, safe_filename))
 
         create_article({
             "title": title,
             "abstract": abstract,
             "authors": session.get("admin", {}).get("username", ""),
             "year": year,
-            "file": file.filename,
+            "file": safe_filename,
             "language": language,
             "image": image,
         })
@@ -520,12 +580,19 @@ def edit_article(article_id):
                 errors.append("سال انتشار باید عدد باشد.")
 
         # PDF replacement is optional on edit — keep the existing file if none uploaded
-        filename = article.get("file")
-        if file and file.filename:
+        old_filename = article.get("file")
+        filename = old_filename
+        upload_folder = current_app.config["UPLOAD_FOLDER"]
+        new_file_uploaded = bool(file and file.filename)
+
+        if new_file_uploaded:
             if not _allowed_article_file(file.filename):
                 errors.append("فقط فایل PDF مجاز است.")
             else:
-                filename = file.filename
+                try:
+                    filename = _safe_upload_filename(file.filename, upload_folder)
+                except ValueError:
+                    errors.append("نام فایل نامعتبر است.")
 
         if errors:
             return render_template(
@@ -544,10 +611,18 @@ def edit_article(article_id):
                 edit_mode=True,
             )
 
-        if file and file.filename and filename == file.filename:
-            upload_folder = current_app.config["UPLOAD_FOLDER"]
+        if new_file_uploaded:
             os.makedirs(upload_folder, exist_ok=True)
-            file.save(os.path.join(upload_folder, file.filename))
+            file.save(os.path.join(upload_folder, filename))
+
+            # Clean up the old PDF now that it's been replaced (best-effort)
+            if old_filename and old_filename != filename:
+                old_path = os.path.join(upload_folder, old_filename)
+                if os.path.exists(old_path):
+                    try:
+                        os.remove(old_path)
+                    except OSError:
+                        pass
 
         update_article(article_id, {
             "title": title,
