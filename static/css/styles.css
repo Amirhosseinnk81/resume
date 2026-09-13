@@ -1342,7 +1342,11 @@ h6 {
 
   overflow: hidden;
 
-  padding: 70px 0 90px;
+  padding: 70px 0 130px;
+
+  margin: 20px;
+
+  border-radius: 1%;
 
 }
 
@@ -1357,20 +1361,20 @@ h6 {
 
   border-radius: 50%;
 
-  filter: blur(90px);
+  filter: blur(110px);
 
   pointer-events: none;
 
-  opacity: 0.14;
+  opacity: 0.10;
 
 }
 
 
 .hero-glow-1 {
 
-  top: -100px;
+  top: -160px;
 
-  right: -100px;
+  right: -160px;
 
   background: var(--primary);
 
@@ -1379,9 +1383,13 @@ h6 {
 
 .hero-glow-2 {
 
-  bottom: -150px;
+  /* Pushed further outside the section (and softened above) so the blur
+     fully fades to transparent before overflow:hidden clips it — previously
+     it was clipped mid-fade, leaving a visible hard edge near the bottom
+     of the hero section. */
+  bottom: -260px;
 
-  left: -100px;
+  left: -160px;
 
   background: var(--accent);
 
