@@ -1200,51 +1200,180 @@ h6 {
 
 
 /* =====================================================
-   TIMELINE
+   CV TIMELINE (experience / education)
 ===================================================== */
 
-.timeline li {
+.cv-timeline {
 
-  position:
-    relative;
-
-  padding-right:
-    1.5rem;
-
-  border-right:
-    2px solid var(--primary);
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
 }
 
 
-.timeline li::before {
+.cv-timeline-item {
 
-  content:
-    "";
+  position: relative;
+  padding-inline-start: 28px;
+  padding-bottom: 28px;
+  border-inline-start: 2px solid var(--border);
 
-  position:
-    absolute;
+}
 
-  right:
-    -7px;
 
-  top:
-    4px;
+.cv-timeline-item:last-child {
 
-  width:
-    12px;
+  border-inline-start-color: transparent;
+  padding-bottom: 0;
 
-  height:
-    12px;
+}
 
-  background:
-    var(--primary);
 
-  border:
-    3px solid var(--surface);
+.cv-timeline-dot {
 
-  border-radius:
-    50%;
+  position: absolute;
+  inset-inline-start: -7px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid var(--surface);
+
+}
+
+
+.cv-timeline-item.is-current .cv-timeline-dot {
+
+  background: var(--accent);
+
+}
+
+
+.cv-timeline-item.is-current .cv-timeline-dot::after {
+
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0.5;
+  animation: cv-pulse 2s ease-out infinite;
+
+}
+
+
+@keyframes cv-pulse {
+
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+
+}
+
+
+.cv-timeline-card {
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.3rem;
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition),
+    border-color var(--transition);
+
+}
+
+
+.cv-timeline-card:hover {
+
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+
+}
+
+
+.cv-timeline-item.is-current .cv-timeline-card:hover {
+
+  border-color: var(--accent);
+
+}
+
+
+.cv-timeline-card-head {
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 4px;
+
+}
+
+
+.cv-role {
+
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text);
+
+}
+
+
+.cv-year {
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+
+}
+
+
+.cv-current-badge {
+
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.12);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+
+}
+
+
+.cv-org {
+
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 6px;
+
+}
+
+
+.cv-desc {
+
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.7;
 
 }
 
@@ -1311,7 +1440,7 @@ h6 {
 .skill-level {
   font-weight: 800;
   font-size: 1.05rem;
-  color: var(--skill-color, var(--primary));
+  color: var(--text);
   direction: ltr;
 }
 

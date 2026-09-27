@@ -25,23 +25,45 @@
 
 
         <h2 class="h3 mb-3">تجربه کاری</h2>
-        <ul class="timeline list-unstyled">
+        <ul class="cv-timeline list-unstyled">
             {% for e in experiences %}
-            <li class="mb-4 fade-item">
-                <div class="fw-bold">{{ e.role }} – <span class="text-primary">{{ e.company }}</span></div>
-                <small class="text-secondary">{{ e.year }}</small>
-                <p class="mt-1 text-secondary">{{ e.desc }}</p>
+            {% set parts = e.year.split(' - ') %}
+            {% set is_current = parts|length > 1 and parts[1] == 'حالا' %}
+            <li class="cv-timeline-item{{ ' is-current' if is_current else '' }}" data-aos="fade-up">
+                <span class="cv-timeline-dot"></span>
+                <div class="cv-timeline-card">
+                    <div class="cv-timeline-card-head">
+                        <h3 class="cv-role">{{ e.role }}</h3>
+                        <span class="cv-year">
+                            {{ parts[0] }}{% if parts|length > 1 and not is_current %} – {{ parts[1] }}{% endif %}
+                            {% if is_current %}<span class="cv-current-badge">هم‌اکنون</span>{% endif %}
+                        </span>
+                    </div>
+                    <div class="cv-org">{{ e.company }}</div>
+                    <p class="cv-desc">{{ e.desc }}</p>
+                </div>
             </li>
             {% endfor %}
         </ul>
 
         <h2 class="h3 mb-3">تحصیلات</h2>
-        <ul class="timeline list-unstyled">
+        <ul class="cv-timeline list-unstyled">
             {% for ed in education %}
-            <li class="mb-4 fade-item" data-aos="fade-up">
-                <div class="fw-bold">{{ ed.degree }} – <span class="text-primary">{{ ed.university }}</span></div>
-                <small class="text-secondary">{{ ed.year }}</small>
-                <p class="mt-1 text-secondary">{{ ed.desc }}</p>
+            {% set parts = ed.year.split(' - ') %}
+            {% set is_current = parts|length > 1 and parts[1] == 'حالا' %}
+            <li class="cv-timeline-item{{ ' is-current' if is_current else '' }}" data-aos="fade-up">
+                <span class="cv-timeline-dot"></span>
+                <div class="cv-timeline-card">
+                    <div class="cv-timeline-card-head">
+                        <h3 class="cv-role">{{ ed.degree }}</h3>
+                        <span class="cv-year">
+                            {{ parts[0] }}{% if parts|length > 1 and not is_current %} – {{ parts[1] }}{% endif %}
+                            {% if is_current %}<span class="cv-current-badge">هم‌اکنون</span>{% endif %}
+                        </span>
+                    </div>
+                    <div class="cv-org">{{ ed.university }}</div>
+                    <p class="cv-desc">{{ ed.desc }}</p>
+                </div>
             </li>
             {% endfor %}
         </ul>
@@ -54,9 +76,10 @@
     <div class="col-12">
         <h4 class="mb-4">{{ t.MENU_SKILLS }}</h4>
         <div class="skills-grid">
-            {% for s in skills %}
+            {% for s in skills|sort(attribute='level', reverse=true) %}
             {% set meta = s.name | skill_icon %}
-            <div class="skill-card" style="--skill-color: #{{ meta.color }};">
+            <div class="skill-card" style="--skill-color: #{{ meta.color }};" data-aos="fade-up"
+                data-aos-delay="{{ loop.index0 * 60 }}">
                 <div class="skill-card-top">
                     <div class="skill-identity">
                         {% if meta.icon %}
