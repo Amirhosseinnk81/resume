@@ -10,6 +10,7 @@ stored anywhere — only the hash goes in .env.
 """
 
 import getpass
+
 from werkzeug.security import generate_password_hash
 
 

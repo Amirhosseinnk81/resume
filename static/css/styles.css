@@ -62,6 +62,95 @@ body[data-theme="dark"] {
 }
 
 
+/* No-JS / pre-hydration fallback: when nothing has set data-theme yet, follow
+   the operating system. The toggle writes data-theme explicitly, which has
+   higher specificity than this media block and therefore always wins. */
+@media (prefers-color-scheme: dark) {
+
+  body:not([data-theme]) {
+
+  --bg: #0b1120;
+  --surface: #111827;
+  --surface-hover: #1e293b;
+
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+
+  --border: #1e293b;
+
+  --navbar-bg: rgba(11, 17, 32, 0.78);
+
+  --shadow-sm:
+    0 2px 8px rgba(0, 0, 0, 0.25);
+
+  --shadow-md:
+    0 10px 30px rgba(0, 0, 0, 0.35);
+
+  }
+
+}
+
+
+/* =====================================================
+   SCROLL REVEAL  (replaces AOS)
+
+   main.js adds .reveal to every [data-aos] element, then .reveal-visible when
+   it scrolls into view. data-aos-delay is forwarded as --reveal-delay.
+===================================================== */
+
+.reveal {
+
+  opacity: 0;
+  transform: translateY(18px);
+
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  transition-delay: var(--reveal-delay, 0ms);
+
+  will-change: opacity, transform;
+
+}
+
+
+.reveal-visible {
+
+  opacity: 1;
+  transform: none;
+
+}
+
+
+/* Directional variants matching the data-aos values used in the templates. */
+
+[data-aos="fade-right"].reveal {
+  transform: translateX(24px);
+}
+
+[data-aos="fade-left"].reveal {
+  transform: translateX(-24px);
+}
+
+[data-aos="zoom-in"].reveal {
+  transform: scale(0.94);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+  .reveal,
+  .reveal-visible {
+
+    opacity: 1;
+    transform: none;
+    transition: none;
+
+  }
+
+}
+
+
 /* =====================================================
    GLOBAL
 ===================================================== */
@@ -5204,5 +5293,270 @@ RESPONSIVE
     height:
       220px;
   }
+
+}
+
+/* =====================================================
+   SKILL GROUPS  (replaces the percentage gauges)
+
+   The old .skill-card / .skill-gauge rules are left in place but are no
+   longer referenced by any template.
+===================================================== */
+
+.skill-groups {
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+
+}
+
+
+.skill-group-title {
+
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: var(--text-muted);
+
+  margin-bottom: 0.75rem;
+
+}
+
+
+.skill-tags {
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+}
+
+
+.skill-tag {
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  padding: 0.4rem 0.7rem;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+
+  transition: var(--transition);
+
+}
+
+
+.skill-tag:hover {
+
+  border-color: var(--skill-color, var(--primary));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+
+}
+
+
+.skill-tag-icon {
+
+  width: 16px;
+  height: 16px;
+
+  /* Reserve the box so the row doesn't reflow as icons arrive. */
+  flex: 0 0 auto;
+
+}
+
+
+/* =====================================================
+   CV STACK TAGS  (technology per role)
+===================================================== */
+
+.cv-stack {
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+
+}
+
+
+.cv-stack-tag {
+
+  padding: 0.2rem 0.6rem;
+
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border-radius: 999px;
+
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primary);
+
+}
+
+
+/* Fallback for browsers without color-mix(). */
+@supports not (background: color-mix(in srgb, red 10%, transparent)) {
+
+  .cv-stack-tag {
+    background: rgba(37, 99, 235, 0.1);
+  }
+
+}
+
+
+/* =====================================================
+   PROJECT METRIC  (a concrete number per project)
+===================================================== */
+
+.project-metric {
+
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+
+  font-size: 0.85rem;
+  color: var(--text-muted);
+
+}
+
+
+.project-metric-value {
+
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+
+  font-variant-numeric: tabular-nums;
+
+}
+
+
+/* =====================================================
+   ARTICLE VIEW COUNT
+===================================================== */
+
+.article-views {
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  font-size: 0.8rem;
+  color: var(--text-muted);
+
+  font-variant-numeric: tabular-nums;
+
+}
+
+
+/* =====================================================
+   ERROR PAGES
+===================================================== */
+
+.error-page {
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 50vh;
+  padding: 3rem 1rem;
+
+}
+
+
+.error-code {
+
+  font-size: clamp(4rem, 14vw, 8rem);
+  font-weight: 800;
+  line-height: 1;
+
+  margin: 0 0 0.5rem;
+
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+}
+
+
+.error-title {
+
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  font-weight: 700;
+
+  margin: 0 0 0.75rem;
+
+}
+
+
+.error-body {
+
+  max-width: 44ch;
+
+  color: var(--text-muted);
+
+  margin: 0 0 2rem;
+
+}
+
+
+.error-actions {
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+
+}
+
+
+/* =====================================================
+   BUILT-WITH FOOTER CREDIT
+===================================================== */
+
+.built-with {
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+
+  font-size: 0.8rem;
+  color: var(--text-muted);
+
+  margin-top: 0.75rem;
+
+}
+
+
+.built-with-tag {
+
+  padding: 0.15rem 0.5rem;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  font-size: 0.72rem;
 
 }

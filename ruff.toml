@@ -1,0 +1,19 @@
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4"]
+ignore = [
+  "E501",   # long lines are handled by the formatter, not enforced here
+  "B008",   # Flask/WTForms idioms rely on calls in defaults
+  "UP038",  # isinstance(x, (A, B)) is clearer than A | B here
+  "C408",   # dict(...) reads better than a literal in context processors
+]
+
+[lint.per-file-ignores]
+# The factory imports after load_dotenv() on purpose.
+"app.py" = ["E402"]
+# Importing .routes at the bottom is how the blueprint registers its views.
+"admin/__init__.py" = ["E402", "F401"]
+"scripts/*" = ["E402"]
+"tests/*" = ["E402", "F401"]

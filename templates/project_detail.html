@@ -128,6 +128,19 @@
                 </p>
 
 
+                {#
+                  A concrete number per project, the way every reference
+                  portfolio presents one ("8,281 stars", "100k+ installs").
+                  Optional, set per project from the admin panel.
+                #}
+                {% if project.metric_value %}
+                <p class="project-metric">
+                    <span class="project-metric-value">{{ project.metric_value }}</span>
+                    {% if project.metric_label %}<span>{{ project.metric_label }}</span>{% endif %}
+                </p>
+                {% endif %}
+
+
                 {% if project.features %}
 
                 <h2>

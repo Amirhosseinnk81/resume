@@ -12,8 +12,11 @@
 {% block content %}
 <div class="row g-4">
     <div class="col-md-4">
-        <img class="img-fluid rounded-4 shadow-sm" src="https://avatars.githubusercontent.com/u/9919?s=200&v=4"
-            alt="avatar" />
+        {# Was https://avatars.githubusercontent.com/u/9919 — that id belongs to
+           an unrelated GitHub account, so the About page showed a stranger. #}
+        <img class="img-fluid rounded-4 shadow-sm"
+            src="{{ url_for('static', filename='images/profile.jpg') }}"
+            alt="{{ NAME }}" width="400" height="400" loading="lazy" decoding="async" />
     </div>
     <div class="col-md-8">
         <h1 class="h3 mb-4">{{ t.MENU_ABOUT }}</h1>
@@ -24,7 +27,7 @@
         <hr class="my-4" />
 
 
-        <h2 class="h3 mb-3">تجربه کاری</h2>
+        <h2 class="h3 mb-3">{{ t.EXPERIENCE_TITLE }}</h2>
         <ul class="cv-timeline list-unstyled">
             {% for e in experiences %}
             {% set parts = e.year.split(' - ') %}
@@ -41,12 +44,23 @@
                     </div>
                     <div class="cv-org">{{ e.company }}</div>
                     <p class="cv-desc">{{ e.desc }}</p>
+
+                    {# The stack per role is what a reader scans for and what
+                       makes the page findable by keyword; free-text desc
+                       alone carried none of that signal. #}
+                    {% if e.stack %}
+                    <ul class="cv-stack">
+                        {% for tech in e.stack %}
+                        <li class="cv-stack-tag">{{ tech }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
                 </div>
             </li>
             {% endfor %}
         </ul>
 
-        <h2 class="h3 mb-3">تحصیلات</h2>
+        <h2 class="h3 mb-3">{{ t.EDUCATION_TITLE }}</h2>
         <ul class="cv-timeline list-unstyled">
             {% for ed in education %}
             {% set parts = ed.year.split(' - ') %}
@@ -74,30 +88,41 @@
 
 <div class="mb-3">
     <div class="col-12">
-        <h4 class="mb-4">{{ t.MENU_SKILLS }}</h4>
-        <div class="skills-grid">
-            {% for s in skills|sort(attribute='level', reverse=true) %}
-            {% set meta = s.name | skill_icon %}
-            <div class="skill-card" style="--skill-color: #{{ meta.color }};" data-aos="fade-up"
-                data-aos-delay="{{ loop.index0 * 60 }}">
-                <div class="skill-card-top">
-                    <div class="skill-identity">
+        <h4 class="mb-4">{{ t.SKILLS_TITLE }}</h4>
+
+        {#
+          Percentage skill bars were replaced by categorised tags. A number
+          like "JavaScript 10%" has no defined scale and argues against the
+          candidate; none of the reference portfolios reviewed use one.
+          Grouping by category is what a reader actually scans for.
+        #}
+        <div class="skill-groups">
+
+            {% for group in skill_groups %}
+            <div class="skill-group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+
+                <h5 class="skill-group-title">
+                    {{ t['SKILL_CAT_' ~ group.category|upper] }}
+                </h5>
+
+                <ul class="skill-tags">
+                    {% for s in group.skills %}
+                    {% set meta = s.name | skill_icon %}
+                    <li class="skill-tag" style="--skill-color: #{{ meta.color }};">
                         {% if meta.icon %}
-                        <img class="skill-icon" src="https://cdn.simpleicons.org/{{ meta.icon }}/{{ meta.color }}"
-                            alt="" loading="lazy">
+                        <img class="skill-tag-icon" src="https://cdn.simpleicons.org/{{ meta.icon }}/{{ meta.color }}"
+                            alt="" width="16" height="16" loading="lazy" decoding="async">
                         {% endif %}
-                        <span class="skill-name">{{ s.name }}</span>
-                    </div>
-                    <span class="skill-level">{{ s.level }}%</span>
-                </div>
-                <div class="skill-gauge">
-                    {% for segment in range(10) %}
-                    <span class="skill-gauge-segment{% if segment < (s.level // 10) %} is-filled{% endif %}"></span>
+                        <span>{{ s.name }}</span>
+                    </li>
                     {% endfor %}
-                </div>
+                </ul>
+
             </div>
             {% endfor %}
+
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

@@ -1,101 +1,90 @@
-import json
-import os
-import threading
+"""
+Project data access.
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+Backed by SQLAlchemy instead of data/projects.json. Every public function
+keeps the signature and dict-returning behaviour it had before, so routes
+and templates were not changed by the migration.
+"""
 
-PROJECTS_FILE = os.path.join(BASE_DIR, "data", "projects.json")
+from extensions import db
+from models import Project
 
-# Guards the read-modify-write sequence in create/update/delete below so two
-# concurrent requests (e.g. two admin tabs) can't race and silently drop one
-# write. This only protects within a single process — if this app is ever
-# deployed with multiple worker processes, use a real file lock or a database instead.
-_lock = threading.Lock()
+# Keys the admin form submits that map onto list columns.
+_LIST_FIELDS = ("technologies", "features")
+
+
+def _apply(project, data):
+    """Copy a plain dict (as the admin routes build it) onto a Project row."""
+
+    for field in _LIST_FIELDS:
+        if field in data:
+            value = data[field]
+            if isinstance(value, (list, tuple)):
+                value = "\n".join(str(item).strip() for item in value if str(item).strip())
+            setattr(project, f"{field}_raw", value or "")
+
+    for field in (
+        "title",
+        "description",
+        "github",
+        "demo",
+        "image",
+        "status",
+        "metric_label",
+        "metric_value",
+    ):
+        if field in data:
+            setattr(project, field, data[field] or "")
+
+    if "year" in data:
+        try:
+            project.year = int(data["year"]) if data["year"] not in (None, "") else None
+        except (TypeError, ValueError):
+            project.year = None
+
+    return project
 
 
 def get_projects():
-
-    if not os.path.exists(PROJECTS_FILE):
-        return []
-
-    with open(PROJECTS_FILE, "r", encoding="utf-8") as file:
-
-        return json.load(file)
+    """Newest first, so the portfolio leads with recent work."""
+    rows = (
+        Project.query
+        .order_by(Project.year.desc().nullslast(), Project.id.desc())
+        .all()
+    )
+    return [row.to_dict() for row in rows]
 
 
 def get_project_by_id(project_id):
-
-    projects = get_projects()
-
-    for project in projects:
-
-        if project.get("id") == project_id:
-            return project
-
-    return None
+    row = db.session.get(Project, project_id)
+    return row.to_dict() if row else None
 
 
 def create_project(project):
-
-    with _lock:
-
-        projects = get_projects()
-
-        if projects:
-            new_id = max(project.get("id", 0) for project in projects) + 1
-        else:
-            new_id = 1
-
-        project["id"] = new_id
-
-        projects.append(project)
-
-        with open(PROJECTS_FILE, "w", encoding="utf-8") as file:
-
-            json.dump(projects, file, ensure_ascii=False, indent=4)
-
-        return project
+    row = _apply(Project(), project)
+    db.session.add(row)
+    db.session.commit()
+    return row.to_dict()
 
 
 def update_project(project_id, updated_data):
-
-    with _lock:
-
-        projects = get_projects()
-
-        for index, project in enumerate(projects):
-
-            if project.get("id") == project_id:
-
-                updated_data["id"] = project_id
-
-                projects[index] = updated_data
-
-                with open(PROJECTS_FILE, "w", encoding="utf-8") as file:
-
-                    json.dump(projects, file, ensure_ascii=False, indent=4)
-
-                return updated_data
-
+    row = db.session.get(Project, project_id)
+    if row is None:
         return None
+    _apply(row, updated_data)
+    db.session.commit()
+    return row.to_dict()
 
 
 def delete_project(project_id):
-
-    with _lock:
-
-        projects = get_projects()
-
-        for index, project in enumerate(projects):
-
-            if project.get("id") == project_id:
-
-                deleted_project = projects.pop(index)
-
-                with open(PROJECTS_FILE, "w", encoding="utf-8") as file:
-
-                    json.dump(projects, file, ensure_ascii=False, indent=4)
-
-                return deleted_project
-
+    row = db.session.get(Project, project_id)
+    if row is None:
         return None
+    data = row.to_dict()
+    db.session.delete(row)
+    db.session.commit()
+    return data
+
+
+def count_projects():
+    return Project.query.count()
