@@ -1,227 +1,194 @@
 {% extends "admin/base.html" %}
+{% from "admin/_macros.html" import field, file_field, form_errors %}
 
-{% block title %}Settings{% endblock %}
+{% block title %}Settings | Admin{% endblock %}
 
 {% block content %}
+<div class="container-fluid py-4">
 
-<div class="container-fluid">
+  <h1 class="h4 mb-4"><i class="bi bi-gear"></i> تنظیمات</h1>
 
-    <!-- Page Header -->
+  {{ form_errors(form) }}
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+  <form method="post" enctype="multipart/form-data" novalidate>
 
-        <div>
+    {{ form.hidden_tag() }}
 
-            <h3 class="fw-bold mb-1">
-                Settings
-            </h3>
+    <div class="row g-4">
 
-            <p class="text-muted mb-0">
-                Content shown on your public site: social links, skill bars, and your resume file.
+      <!-- Socials -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+
+          <div class="card-header">
+            <i class="bi bi-share"></i> شبکه‌های اجتماعی
+          </div>
+
+          <div class="card-body">
+            {{ field(form.github, placeholder="https://github.com/username") }}
+            {{ field(form.linkedin, placeholder="https://www.linkedin.com/in/username/") }}
+            {{ field(form.twitter, placeholder="https://x.com/username") }}
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Resume -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+
+          <div class="card-header">
+            <i class="bi bi-file-earmark-pdf"></i> فایل رزومه
+          </div>
+
+          <div class="card-body">
+            {{ file_field(form.resume,
+                          help="جایگزین myresume.pdf می‌شود؛ همان فایلی که /resume ارائه می‌دهد.") }}
+
+            <a href="{{ url_for('download_resume') }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+              <i class="bi bi-download"></i> دانلود رزومهٔ فعلی
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="col-12">
+        <div class="card">
+
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-stars"></i> مهارت‌ها</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="addSkillRow">
+              <i class="bi bi-plus-lg"></i> افزودن مهارت
+            </button>
+          </div>
+
+          <div class="card-body">
+
+            {#
+              Skills changed from a percentage to a category. A number like
+              "JavaScript 10%" has no defined scale and reads as an argument
+              against the candidate, so the public pages now group skills as
+              tags instead of drawing gauges.
+            #}
+            <p class="text-muted small">
+              هر مهارت یک دسته دارد و در صفحهٔ «درباره‌من» به‌شکل تگ گروه‌بندی‌شده نمایش داده می‌شود.
+              برای حذف یک مهارت، نامش را خالی بگذارید.
             </p>
 
+            <div id="skillRows">
+
+              {% for entry in form.skills %}
+              <div class="row g-2 align-items-end mb-2 skill-row">
+
+                <div class="col-sm-6">
+                  <label class="form-label small">{{ entry.form.name.label.text }}</label>
+                  {{ entry.form.name(class="form-control form-control-sm", placeholder="Python") }}
+                </div>
+
+                <div class="col-sm-4">
+                  <label class="form-label small">{{ entry.form.category.label.text }}</label>
+                  {{ entry.form.category(class="form-select form-select-sm") }}
+                </div>
+
+                <div class="col-sm-2">
+                  <button type="button" class="btn btn-sm btn-outline-danger w-100 removeSkillRow">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+
+              </div>
+              {% endfor %}
+
+            </div>
+
+          </div>
+
         </div>
+      </div>
 
     </div>
 
-
-    <!-- Errors -->
-
-    {% if errors %}
-
-    <div class="alert alert-danger">
-
-        <ul class="mb-0">
-
-            {% for error in errors %}
-            <li>{{ error }}</li>
-            {% endfor %}
-
-        </ul>
-
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-lg"></i> ذخیره تنظیمات
+      </button>
     </div>
 
-    {% endif %}
-
-
-    <form method="POST" action="{{ url_for('admin.settings') }}" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-
-        <!-- =====================================
-             SOCIAL LINKS
-        ====================================== -->
-
-        <div class="card shadow-sm border-0 mb-4">
-
-            <div class="card-body p-4">
-
-                <h5 class="fw-bold mb-4">
-                    <i class="bi bi-share me-1"></i>
-                    Social Links
-                </h5>
-
-                <div class="mb-3">
-
-                    <label for="github" class="form-label fw-semibold">
-                        <i class="bi bi-github me-1"></i>
-                        GitHub
-                    </label>
-
-                    <input type="url" class="form-control" id="github" name="github"
-                        value="{{ settings.socials.get('github', '') }}"
-                        placeholder="https://github.com/username">
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label for="linkedin" class="form-label fw-semibold">
-                        <i class="bi bi-linkedin me-1"></i>
-                        LinkedIn
-                    </label>
-
-                    <input type="url" class="form-control" id="linkedin" name="linkedin"
-                        value="{{ settings.socials.get('linkedin', '') }}"
-                        placeholder="https://www.linkedin.com/in/username">
-
-                </div>
-
-                <div class="mb-0">
-
-                    <label for="twitter" class="form-label fw-semibold">
-                        <i class="bi bi-twitter-x me-1"></i>
-                        Twitter / X
-                    </label>
-
-                    <input type="url" class="form-control" id="twitter" name="twitter"
-                        value="{{ settings.socials.get('twitter', '') }}"
-                        placeholder="https://x.com/username">
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- =====================================
-             SKILLS
-        ====================================== -->
-
-        <div class="card shadow-sm border-0 mb-4">
-
-            <div class="card-body p-4">
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
-
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-bar-chart me-1"></i>
-                        Skills
-                    </h5>
-
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="addSkillRow">
-                        <i class="bi bi-plus-lg me-1"></i>
-                        Add Skill
-                    </button>
-
-                </div>
-
-                <div id="skillRows">
-
-                    {% for skill in settings.skills %}
-
-                    <div class="row g-2 align-items-center mb-2 skill-row">
-
-                        <div class="col-6 col-md-7">
-                            <input type="text" class="form-control" name="skill_name[]"
-                                value="{{ skill.name }}" placeholder="مثلاً Python">
-                        </div>
-
-                        <div class="col-4 col-md-3">
-                            <input type="number" class="form-control" name="skill_level[]" min="0" max="100"
-                                value="{{ skill.level }}" placeholder="0-100">
-                        </div>
-
-                        <div class="col-2 text-end">
-                            <button type="button" class="btn btn-outline-danger btn-sm remove-skill-row">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-
-                    </div>
-
-                    {% endfor %}
-
-                </div>
-
-                <div class="form-text mt-2">
-                    سطح مهارت عددی بین ۰ تا ۱۰۰ است — همان درصدی که در نوار مهارت‌ها نمایش داده می‌شود.
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- =====================================
-             RESUME PDF
-        ====================================== -->
-
-        <div class="card shadow-sm border-0 mb-4">
-
-            <div class="card-body p-4">
-
-                <h5 class="fw-bold mb-4">
-                    <i class="bi bi-file-earmark-pdf me-1"></i>
-                    Resume File
-                </h5>
-
-                <label for="resume" class="form-label fw-semibold">
-                    Replace resume PDF
-                </label>
-
-                <input type="file" class="form-control" id="resume" name="resume" accept="application/pdf">
-
-                <div class="form-text">
-                    اگر فایلی انتخاب نکنی، رزومهٔ فعلی (قابل دانلود از <code>/resume</code>) بدون تغییر می‌ماند.
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check-lg me-1"></i>
-            Save Settings
-        </button>
-
-    </form>
+  </form>
 
 </div>
 
+{#
+  WTForms FieldList indexes its entries by position (skills-0-name,
+  skills-1-name, ...). Added rows must continue that numbering or the server
+  silently ignores them, so the index is recomputed after every add/remove.
+#}
+<script>
+  (function () {
 
-<!-- Row template used by JS to clone new skill rows -->
+    const rows = document.getElementById("skillRows");
+    const addBtn = document.getElementById("addSkillRow");
 
-<template id="skillRowTemplate">
-    <div class="row g-2 align-items-center mb-2 skill-row">
+    if (!rows || !addBtn) {
+      return;
+    }
 
-        <div class="col-6 col-md-7">
-            <input type="text" class="form-control" name="skill_name[]" placeholder="مثلاً Python">
+    const CATEGORY_OPTIONS = {{ skill_category_choices | tojson }};
+
+    function reindex() {
+      rows.querySelectorAll(".skill-row").forEach((row, index) => {
+        row.querySelectorAll("input, select").forEach((input) => {
+          const field = input.name.split("-").pop();
+          input.name = `skills-${index}-${field}`;
+          input.id = `skills-${index}-${field}`;
+        });
+      });
+    }
+
+    function buildRow() {
+      const row = document.createElement("div");
+      row.className = "row g-2 align-items-end mb-2 skill-row";
+
+      const options = CATEGORY_OPTIONS
+        .map((o) => `<option value="${o.value}">${o.label}</option>`)
+        .join("");
+
+      row.innerHTML = `
+        <div class="col-sm-6">
+          <label class="form-label small">مهارت</label>
+          <input class="form-control form-control-sm" name="name" placeholder="Python">
         </div>
-
-        <div class="col-4 col-md-3">
-            <input type="number" class="form-control" name="skill_level[]" min="0" max="100" placeholder="0-100">
+        <div class="col-sm-4">
+          <label class="form-label small">دسته</label>
+          <select class="form-select form-select-sm" name="category">${options}</select>
         </div>
+        <div class="col-sm-2">
+          <button type="button" class="btn btn-sm btn-outline-danger w-100 removeSkillRow">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>`;
 
-        <div class="col-2 text-end">
-            <button type="button" class="btn btn-outline-danger btn-sm remove-skill-row">
-                <i class="bi bi-trash"></i>
-            </button>
-        </div>
+      return row;
+    }
 
-    </div>
-</template>
+    addBtn.addEventListener("click", () => {
+      rows.appendChild(buildRow());
+      reindex();
+    });
 
+    rows.addEventListener("click", (event) => {
+      const button = event.target.closest(".removeSkillRow");
+      if (!button) {
+        return;
+      }
+      button.closest(".skill-row").remove();
+      reindex();
+    });
+
+    reindex();
+
+  })();
+</script>
 {% endblock %}

@@ -1,0 +1,102 @@
+{#
+  Shared field macros for the admin forms.
+
+  The three form templates previously each repeated the same label/input/
+  error markup by hand against a plain dict, which is why they ran to 368,
+  240 and 227 lines. With WTForms the field renders itself and its own
+  errors, so each form template is now mostly a list of field names.
+#}
+
+{% macro field(f, placeholder="", help="", rows=0, type="text") %}
+<div class="mb-3">
+
+  <label for="{{ f.id }}" class="form-label">
+    {{ f.label.text }}
+    {% if f.flags.required %}<span class="text-danger">*</span>{% endif %}
+  </label>
+
+  {% if rows %}
+  {{ f(class="form-control" ~ (" is-invalid" if f.errors else ""),
+       rows=rows, placeholder=placeholder) }}
+  {% else %}
+  {{ f(class="form-control" ~ (" is-invalid" if f.errors else ""),
+       placeholder=placeholder) }}
+  {% endif %}
+
+  {% if f.errors %}
+  <div class="invalid-feedback d-block">
+    {% for error in f.errors %}<div>{{ error }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if help %}
+  <div class="form-text">{{ help }}</div>
+  {% endif %}
+
+</div>
+{% endmacro %}
+
+
+{% macro select(f, help="") %}
+<div class="mb-3">
+
+  <label for="{{ f.id }}" class="form-label">{{ f.label.text }}</label>
+
+  {{ f(class="form-select" ~ (" is-invalid" if f.errors else "")) }}
+
+  {% if f.errors %}
+  <div class="invalid-feedback d-block">
+    {% for error in f.errors %}<div>{{ error }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if help %}<div class="form-text">{{ help }}</div>{% endif %}
+
+</div>
+{% endmacro %}
+
+
+{% macro file_field(f, help="", current="") %}
+<div class="mb-3">
+
+  <label for="{{ f.id }}" class="form-label">
+    {{ f.label.text }}
+    {% if f.flags.required %}<span class="text-danger">*</span>{% endif %}
+  </label>
+
+  {{ f(class="form-control" ~ (" is-invalid" if f.errors else ""), accept=".pdf") }}
+
+  {% if f.errors %}
+  <div class="invalid-feedback d-block">
+    {% for error in f.errors %}<div>{{ error }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if current %}
+  <div class="form-text">
+    <i class="bi bi-paperclip"></i>
+    فایل فعلی: <span dir="ltr">{{ current }}</span>
+    <br>برای نگه‌داشتن همین فایل، این فیلد را خالی بگذارید.
+  </div>
+  {% endif %}
+
+  {% if help %}<div class="form-text">{{ help }}</div>{% endif %}
+
+</div>
+{% endmacro %}
+
+
+{# Non-field errors, e.g. a failed CSRF check. #}
+{% macro form_errors(form) %}
+{% if form.errors %}
+<div class="alert alert-danger">
+  <ul class="mb-0 ps-3">
+    {% for name, errors in form.errors.items() %}
+    {% for error in errors %}
+    {% if error is string %}<li>{{ error }}</li>{% endif %}
+    {% endfor %}
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endmacro %}
