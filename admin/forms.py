@@ -89,6 +89,12 @@ class ProjectForm(FlaskForm):
         "توضیحات",
         validators=[DataRequired("توضیحات پروژه الزامی است."), Length(max=5000)],
     )
+
+    # Optional English variants; empty falls back to the Persian text.
+    title_en = StringField("عنوان (انگلیسی)", validators=[Optional(), Length(max=200)])
+    description_en = TextAreaField(
+        "توضیحات (انگلیسی)", validators=[Optional(), Length(max=5000)]
+    )
     technologies = CommaSeparatedField(
         "تکنولوژی‌ها",
         validators=[DataRequired("حداقل یک تکنولوژی وارد کنید.")],
@@ -127,7 +133,9 @@ class ProjectForm(FlaskForm):
     def to_dict(self):
         return {
             "title": self.title.data.strip(),
+            "title_en": (self.title_en.data or "").strip(),
             "description": self.description.data.strip(),
+            "description_en": (self.description_en.data or "").strip(),
             "technologies": self.technologies.data,
             "features": self.features.data,
             "github": (self.github.data or "").strip(),
@@ -156,6 +164,15 @@ class ArticleForm(FlaskForm):
         validators=[DataRequired("چکیده مقاله الزامی است."), Length(max=5000)],
     )
     authors = StringField("نویسندگان", validators=[Optional(), Length(max=300)])
+
+    # Optional English variants; empty falls back to the Persian text.
+    title_en = StringField("عنوان (انگلیسی)", validators=[Optional(), Length(max=300)])
+    abstract_en = TextAreaField(
+        "چکیده (انگلیسی)", validators=[Optional(), Length(max=5000)]
+    )
+    authors_en = StringField(
+        "نویسندگان (انگلیسی)", validators=[Optional(), Length(max=300)]
+    )
     year = IntegerField(
         "سال انتشار",
         validators=[
@@ -184,8 +201,11 @@ class ArticleForm(FlaskForm):
     def to_dict(self):
         return {
             "title": self.title.data.strip(),
+            "title_en": (self.title_en.data or "").strip(),
             "abstract": self.abstract.data.strip(),
+            "abstract_en": (self.abstract_en.data or "").strip(),
             "authors": (self.authors.data or "").strip(),
+            "authors_en": (self.authors_en.data or "").strip(),
             "year": self.year.data,
             "language": self.language.data,
             "image": (self.image.data or "").strip(),

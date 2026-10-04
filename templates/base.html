@@ -5,10 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{% block title %}{{ NAME }} — {{ TAGLINE }}{% endblock %}</title>
+    <title>{% block title %}{{ t.NAME }} — {{ t.TAGLINE }}{% endblock %}</title>
 
-    <meta name="description" content="{% block description %}{{ t.META_DESCRIPTION }}{% endblock %}">
-    <meta name="author" content="{{ NAME }}">
+    <meta name="description" content="{% block meta_description %}{{ t.META_DESCRIPTION }}{% endblock %}">
+    <meta name="author" content="{{ t.NAME }}">
 
     <!-- Follows the active theme so mobile browser chrome matches the page. -->
     <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
@@ -50,13 +50,13 @@
     <!-- PWA -->
     <link rel="manifest" href="{{ url_for('manifest') }}">
 
-    <link rel="alternate" type="application/rss+xml" title="{{ NAME }} — {{ t.MENU_ARTICLES }}"
+    <link rel="alternate" type="application/rss+xml" title="{{ t.NAME }} — {{ t.MENU_ARTICLES }}"
         href="{{ url_for('rss_feed') }}">
 
     {% block meta_og %}
-    <meta property="og:site_name" content="{{ NAME }}">
+    <meta property="og:site_name" content="{{ t.NAME }}">
     <meta property="og:locale" content="{{ 'fa_IR' if lang == 'fa' else 'en_US' }}">
-    <meta property="og:title" content="{% block og_title %}{{ NAME }} — {{ TAGLINE }}{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}{{ t.NAME }} — {{ t.TAGLINE }}{% endblock %}">
     <meta property="og:description" content="{% block og_desc %}{{ t.META_DESCRIPTION }}{% endblock %}">
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:url" content="{{ canonical_url }}">
@@ -65,12 +65,12 @@
     <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="{{ NAME }} — {{ TAGLINE }}">
+    <meta property="og:image:alt" content="{{ t.NAME }} — {{ t.TAGLINE }}">
     {% endblock %}
 
     {% block meta_twitter %}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{% block tw_title %}{{ NAME }} — {{ TAGLINE }}{% endblock %}">
+    <meta name="twitter:title" content="{% block tw_title %}{{ t.NAME }} — {{ t.TAGLINE }}{% endblock %}">
     <meta name="twitter:description" content="{% block tw_desc %}{{ t.META_DESCRIPTION }}{% endblock %}">
     <meta name="twitter:image" content="{% block tw_image %}{{ url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}">
     {% endblock %}
@@ -163,7 +163,7 @@
 
                         <a class="nav-link" href="{{ url_for('home') }}">
                             <i class="fa-solid fa-house"></i>
-                            <span>خانه</span>
+                            <span>{{ t.MENU_HOME }}</span>
                         </a>
 
                     </li>
@@ -194,7 +194,7 @@
                         <a class="nav-link" href="{{ url_for('articles') }}">
                             <i class="fa-solid fa-newspaper"></i>
                             <span>
-                                {{ "مقالات" if lang == "fa" else "Articles" }}
+                                {{ t.MENU_ARTICLES }}
                             </span>
                         </a>
 
@@ -219,8 +219,8 @@
 
                     <!-- Theme -->
 
-                    <button id="themeToggle" class="theme-toggle" type="button" aria-label="تغییر حالت نمایش"
-                        title="تغییر حالت نمایش">
+                    <button id="themeToggle" class="theme-toggle" type="button" aria-label="{{ t.THEME_TOGGLE }}"
+                        title="{{ t.THEME_TOGGLE }}">
 
                         <i class="fa-solid fa-moon"></i>
 
@@ -243,7 +243,7 @@
                         <i class="fa-solid fa-file-pdf"></i>
 
                         <span>
-                            دانلود رزومه
+                            {{ t.BTN_RESUME }}
                         </span>
 
                     </a>
@@ -320,13 +320,11 @@
                 <div class="footer-brand">
 
                     <a href="{{ url_for('home') }}" class="footer-logo">
-                        {{ NAME }}
+                        {{ t.NAME }}
                     </a>
 
                     <p class="footer-description">
-                        توسعه‌دهنده نرم‌افزار و متخصص IT،
-                        علاقه‌مند به طراحی سیستم‌های کاربردی،
-                        شبکه و فناوری‌های نوین.
+                        {{ t.FOOTER_BIO }}
                     </p>
 
                     <div class="footer-status">
@@ -334,7 +332,7 @@
                         <span class="status-dot"></span>
 
                         <span>
-                            آماده همکاری
+                            {{ t.STATUS_AVAILABLE }}
                         </span>
 
                     </div>
@@ -347,38 +345,38 @@
                 <div class="footer-column">
 
                     <h3>
-                        دسترسی سریع
+                        {{ t.QUICK_LINKS }}
                     </h3>
 
                     <ul>
 
                         <li>
                             <a href="{{ url_for('home') }}">
-                                خانه
+                                {{ t.MENU_HOME }}
                             </a>
                         </li>
 
                         <li>
                             <a href="{{ url_for('about') }}">
-                                درباره من
+                                {{ t.MENU_ABOUT }}
                             </a>
                         </li>
 
                         <li>
                             <a href="{{ url_for('projects') }}">
-                                پروژه‌ها
+                                {{ t.MENU_PROJECTS }}
                             </a>
                         </li>
 
                         <li>
                             <a href="{{ url_for('articles') }}">
-                                مقالات
+                                {{ t.MENU_ARTICLES }}
                             </a>
                         </li>
 
                         <li>
                             <a href="{{ url_for('contact') }}">
-                                تماس با من
+                                {{ t.CONTACT_TITLE }}
                             </a>
                         </li>
 
@@ -392,7 +390,7 @@
                 <div class="footer-column">
 
                     <h3>
-                        ارتباط با من
+                        {{ t.CONNECT }}
                     </h3>
 
                     <div class="footer-socials">
@@ -436,7 +434,7 @@
             <div class="footer-bottom">
 
                 <span>
-                    © {{ current_year }} {{ NAME }}
+                    © {{ current_year }} {{ t.NAME }}
                 </span>
 
                 {#
@@ -464,7 +462,7 @@
      SCROLL TO TOP
 ===================================================== -->
 
-    <button id="scrollTopBtn" type="button" aria-label="بازگشت به بالا" title="بازگشت به بالا">
+    <button id="scrollTopBtn" type="button" aria-label="{{ t.SCROLL_TOP }}" title="{{ t.SCROLL_TOP }}">
 
         <i class="fa-solid fa-arrow-up"></i>
 

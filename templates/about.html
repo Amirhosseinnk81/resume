@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}امیرحسین نعیمائی | درباره من{% endblock %}
-{% block meta_description %}معرفی من، تخصص‌ها و تجربه‌های کاری در حوزه برنامه‌نویسی و طراحی وب.{% endblock %}
+{% block title %}{{ t.PAGE_ABOUT_TITLE }}{% endblock %}
+{% block meta_description %}{{ t.PAGE_ABOUT_DESC }}{% endblock %}
 
-{% block og_title %}درباره من{% endblock %}
-{% block og_desc %}آشنایی بیشتر با من و مهارت‌هایم در طراحی وب و نرم‌افزار.{% endblock %}
+{% block og_title %}{{ t.MENU_ABOUT }}{% endblock %}
+{% block og_desc %}{{ t.PAGE_ABOUT_DESC }}{% endblock %}
 
-{% block tw_title %}درباره من{% endblock %}
-{% block tw_desc %}آشنایی بیشتر با من و مهارت‌هایم در طراحی وب و نرم‌افزار.{% endblock %}
+{% block tw_title %}{{ t.MENU_ABOUT }}{% endblock %}
+{% block tw_desc %}{{ t.PAGE_ABOUT_DESC }}{% endblock %}
 
 
 {% block content %}
@@ -16,12 +16,11 @@
            an unrelated GitHub account, so the About page showed a stranger. #}
         <img class="img-fluid rounded-4 shadow-sm"
             src="{{ url_for('static', filename='images/profile.jpg') }}"
-            alt="{{ NAME }}" width="400" height="400" loading="lazy" decoding="async" />
+            alt="{{ t.NAME }}" width="400" height="400" loading="lazy" decoding="async" />
     </div>
     <div class="col-md-8">
         <h1 class="h3 mb-4">{{ t.MENU_ABOUT }}</h1>
-        <p class="text-secondary">من یک توسعه‌دهندهٔ پایتون و Flask هستم که به ساخت سرویس‌های سریع و تمیز علاقه‌مندم.
-        </p>
+        <p class="text-secondary">{{ t.ABOUT_INTRO }}</p>
 
 
         <hr class="my-4" />
@@ -30,20 +29,20 @@
         <h2 class="h3 mb-3">{{ t.EXPERIENCE_TITLE }}</h2>
         <ul class="cv-timeline list-unstyled">
             {% for e in experiences %}
-            {% set parts = e.year.split(' - ') %}
-            {% set is_current = parts|length > 1 and parts[1] == 'حالا' %}
+            {% set is_current = e.year.endswith('حالا') %}
+            {% set parts = (e | loc('year')).split(' - ') %}
             <li class="cv-timeline-item{{ ' is-current' if is_current else '' }}" data-aos="fade-up">
                 <span class="cv-timeline-dot"></span>
                 <div class="cv-timeline-card">
                     <div class="cv-timeline-card-head">
-                        <h3 class="cv-role">{{ e.role }}</h3>
+                        <h3 class="cv-role">{{ e | loc('role') }}</h3>
                         <span class="cv-year">
                             {{ parts[0] }}{% if parts|length > 1 and not is_current %} – {{ parts[1] }}{% endif %}
-                            {% if is_current %}<span class="cv-current-badge">هم‌اکنون</span>{% endif %}
+                            {% if is_current %}<span class="cv-current-badge">{{ t.CURRENT }}</span>{% endif %}
                         </span>
                     </div>
-                    <div class="cv-org">{{ e.company }}</div>
-                    <p class="cv-desc">{{ e.desc }}</p>
+                    <div class="cv-org">{{ e | loc('company') }}</div>
+                    <p class="cv-desc">{{ e | loc('desc') }}</p>
 
                     {# The stack per role is what a reader scans for and what
                        makes the page findable by keyword; free-text desc
@@ -63,20 +62,20 @@
         <h2 class="h3 mb-3">{{ t.EDUCATION_TITLE }}</h2>
         <ul class="cv-timeline list-unstyled">
             {% for ed in education %}
-            {% set parts = ed.year.split(' - ') %}
-            {% set is_current = parts|length > 1 and parts[1] == 'حالا' %}
+            {% set is_current = ed.year.endswith('حالا') %}
+            {% set parts = (ed | loc('year')).split(' - ') %}
             <li class="cv-timeline-item{{ ' is-current' if is_current else '' }}" data-aos="fade-up">
                 <span class="cv-timeline-dot"></span>
                 <div class="cv-timeline-card">
                     <div class="cv-timeline-card-head">
-                        <h3 class="cv-role">{{ ed.degree }}</h3>
+                        <h3 class="cv-role">{{ ed | loc('degree') }}</h3>
                         <span class="cv-year">
                             {{ parts[0] }}{% if parts|length > 1 and not is_current %} – {{ parts[1] }}{% endif %}
-                            {% if is_current %}<span class="cv-current-badge">هم‌اکنون</span>{% endif %}
+                            {% if is_current %}<span class="cv-current-badge">{{ t.CURRENT }}</span>{% endif %}
                         </span>
                     </div>
-                    <div class="cv-org">{{ ed.university }}</div>
-                    <p class="cv-desc">{{ ed.desc }}</p>
+                    <div class="cv-org">{{ ed | loc('university') }}</div>
+                    <p class="cv-desc">{{ ed | loc('desc') }}</p>
                 </div>
             </li>
             {% endfor %}

@@ -32,6 +32,13 @@ class Project(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, default="")
 
+    # Optional English variants. The site is bilingual, but project and
+    # article text lived only in Persian, so the English site still showed
+    # Persian content. Empty means "fall back to the Persian value", so
+    # filling these in is incremental rather than all-or-nothing.
+    title_en = db.Column(db.String(200), default="")
+    description_en = db.Column(db.Text, default="")
+
     # Previously JSON arrays inside the document. Kept as newline-delimited
     # text and exposed as lists by to_dict(), which keeps the template API
     # (`project.technologies`) identical.
@@ -71,7 +78,9 @@ class Project(db.Model):
         return {
             "id": self.id,
             "title": self.title,
+            "title_en": self.title_en or "",
             "description": self.description or "",
+            "description_en": self.description_en or "",
             "technologies": self.technologies,
             "features": self.features,
             "github": self.github or "",
@@ -93,6 +102,11 @@ class Article(db.Model):
     title = db.Column(db.String(300), nullable=False)
     abstract = db.Column(db.Text, default="")
     authors = db.Column(db.String(300), default="")
+
+    # See Project.title_en.
+    title_en = db.Column(db.String(300), default="")
+    abstract_en = db.Column(db.Text, default="")
+    authors_en = db.Column(db.String(300), default="")
     year = db.Column(db.Integer)
     file = db.Column(db.String(500), default="")
     language = db.Column(db.String(10), default="fa")
@@ -106,8 +120,11 @@ class Article(db.Model):
         return {
             "id": self.id,
             "title": self.title,
+            "title_en": self.title_en or "",
             "abstract": self.abstract or "",
+            "abstract_en": self.abstract_en or "",
             "authors": self.authors or "",
+            "authors_en": self.authors_en or "",
             "year": self.year,
             "file": self.file or "",
             "language": self.language or "fa",

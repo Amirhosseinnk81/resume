@@ -36,6 +36,11 @@
             {{ field(form.abstract, rows=5) }}
             {{ field(form.authors, help="خالی بگذارید تا نام کاربری شما ثبت شود.") }}
 
+            {# Optional: leave blank and the English site shows the Persian text. #}
+            {{ field(form.title_en, help="اختیاری — برای نسخهٔ انگلیسی سایت.") }}
+            {{ field(form.abstract_en, rows=4, help="اختیاری.") }}
+            {{ field(form.authors_en, help="اختیاری.") }}
+
           </div>
         </div>
       </div>

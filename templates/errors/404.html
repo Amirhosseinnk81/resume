@@ -1,6 +1,6 @@
 {% extends 'errors/_error_base.html' %}
 
-{% block title %}{{ t.ERR_404_TITLE }} | {{ NAME }}{% endblock %}
+{% block title %}{{ t.ERR_404_TITLE }} | {{ t.NAME }}{% endblock %}
 
 {# Tell crawlers not to index error pages. #}
 {% block meta_og %}<meta name="robots" content="noindex">{% endblock %}

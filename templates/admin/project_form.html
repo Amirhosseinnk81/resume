@@ -34,6 +34,12 @@
             {{ field(form.title, placeholder="مثلاً: Resume Website") }}
             {{ field(form.description, rows=5) }}
 
+            {# Optional: leave blank and the English site shows the Persian text. #}
+            {{ field(form.title_en, placeholder="Resume Website",
+                     help="اختیاری — برای نمایش در نسخهٔ انگلیسی سایت.") }}
+            {{ field(form.description_en, rows=4,
+                     help="اختیاری — خالی بماند، متن فارسی نمایش داده می‌شود.") }}
+
             {{ field(form.technologies,
                      placeholder="Python، Flask، PostgreSQL",
                      help="با ویرگول جدا کنید.") }}
