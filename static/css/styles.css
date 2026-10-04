@@ -1,4 +1,33 @@
 /* =====================================================
+   STYLES.CSS — table of contents
+
+   This file is large. Search for a "=====" banner to jump to a section.
+
+     1.  TOKENS            :root custom properties
+     2.  THEME             body[data-theme="dark"] + prefers-color-scheme
+     3.  GLOBAL            resets, typography, base elements
+     4.  NAVBAR            #mainNavbar, nav links, toggles
+     5.  HERO              landing section
+     6.  BUTTONS           .btn variants
+     7.  CARDS             project / article cards
+     8.  TIMELINE          .cv-timeline (experience & education)
+     9.  SKILL GROUPS      categorised skill tags
+    10.  CV STACK TAGS     technology tags per role
+    11.  PROJECT METRIC    per-project headline number
+    12.  ARTICLE VIEWS     view counter
+    13.  FOOTER            .site-footer, .built-with
+    14.  SCROLL REVEAL     replaces the AOS library
+    15.  ERROR PAGES       404 / 429 / 500
+    16.  RESPONSIVE        media queries
+
+   Conventions
+     - Colours come from custom properties only; never hardcode a hex in a
+       component rule or it will not follow the theme.
+     - Dark mode is driven by body[data-theme="dark"], which JS sets before
+       first paint; the prefers-color-scheme block is the no-JS fallback.
+===================================================== */
+
+/* =====================================================
    DESIGN SYSTEM
 ===================================================== */
 
@@ -1466,90 +1495,6 @@ h6 {
 
 }
 
-
-/* =====================================================
-   SKILLS GRID
-===================================================== */
-
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 1rem;
-}
-
-.skill-card {
-  display: flex;
-  flex-direction: column;
-  gap: .85rem;
-  padding: 1.25rem 1.35rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition:
-    transform var(--transition),
-    box-shadow var(--transition),
-    border-color var(--transition);
-}
-
-.skill-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--skill-color, var(--primary));
-}
-
-.skill-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: .75rem;
-}
-
-.skill-identity {
-  display: flex;
-  align-items: center;
-  gap: .65rem;
-  min-width: 0;
-}
-
-.skill-icon {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-
-.skill-name {
-  font-weight: 700;
-  font-size: .98rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.skill-level {
-  font-weight: 800;
-  font-size: 1.05rem;
-  color: var(--text);
-  direction: ltr;
-}
-
-.skill-gauge {
-  display: flex;
-  gap: 4px;
-  direction: ltr;
-}
-
-.skill-gauge-segment {
-  flex: 1;
-  height: 7px;
-  border-radius: 3px;
-  background: var(--border);
-}
-
-.skill-gauge-segment.is-filled {
-  background: var(--skill-color, var(--primary));
-}
-
 /* =====================================================
    FADE ANIMATION
 ===================================================== */
@@ -2964,36 +2909,6 @@ h6 {
   padding: 22px 22px 0;
 }
 
-
-.article-card-icon {
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  width: 48px;
-
-  height: 48px;
-
-  border-radius: 13px;
-
-  background:
-    rgba(37, 99, 235, 0.09);
-
-  color: var(--primary);
-
-  transition:
-    transform 0.25s ease;
-}
-
-
-.article-card:hover .article-card-icon {
-
-  transform:
-    rotate(-5deg);
-}
 
 
 .article-number {
@@ -4667,40 +4582,6 @@ RESPONSIVE
 }
 
 
-.project-detail-icon {
-
-  display:
-    flex;
-
-  align-items:
-    center;
-
-  justify-content:
-    center;
-
-  width:
-    58px;
-
-  height:
-    58px;
-
-  margin-bottom:
-    28px;
-
-  border-radius:
-    16px;
-
-  background:
-    rgba(37, 99, 235, 0.09);
-
-  color:
-    var(--primary);
-
-  font-size:
-    21px;
-}
-
-
 .project-detail-main h2 {
 
   margin:
@@ -5299,8 +5180,8 @@ RESPONSIVE
 /* =====================================================
    SKILL GROUPS  (replaces the percentage gauges)
 
-   The old .skill-card / .skill-gauge rules are left in place but are no
-   longer referenced by any template.
+   The previous .skill-card / .skill-gauge / .skills-grid rules were
+   removed along with the percentage bars they styled.
 ===================================================== */
 
 .skill-groups {

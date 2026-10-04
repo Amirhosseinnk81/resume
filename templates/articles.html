@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ "مقالات و انتشارات" if lang == "fa" else "Articles & Publications" }} | امیرحسین نعیمائی
+{{ t.PAGE_ARTICLES_TITLE }} | {{ t.NAME }}
 {% endblock %}
 
 {% block meta_description %}
-{{ "فهرست مقالات و انتشارات علمی امیرحسین نعیمائی در حوزه نرم‌افزار و هوش مصنوعی." if lang == "fa" else "List of published articles and papers by Amirhossein Naeimaei." }}
+{{ t.PAGE_ARTICLES_DESC }}
 {% endblock %}
 
 {% block content %}
 <section class="container my-5">
 
     <h2 class="mb-4 text-center">
-        📄 {{ "مقالات و انتشارات" if lang == "fa" else "Articles & Publications" }}
+        📄 {{ t.PAGE_ARTICLES_TITLE }}
     </h2>
 
     {% if articles %}
@@ -28,15 +28,15 @@
                 #}
                 <img src="{{ url_for('static', filename='images/' ~ article.image) if article.image
                              else url_for('static', filename='images/default.png') }}"
-                    class="card-img-top" alt="{{ article.title }}"
+                    class="card-img-top" alt="{{ article | loc('title') }}"
                     width="800" height="450" loading="lazy" decoding="async">
 
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ article.title }}</h5>
+                    <h5 class="card-title">{{ article | loc('title') }}</h5>
                     <p class="card-subtitle mb-2 text-muted small">
-                        {{ article.authors }} – {{ article.year }}
+                        {{ article | loc('authors') }} – {{ article.year }}
                     </p>
-                    <p class="card-text">{{ article.abstract | truncate(120) }}</p>
+                    <p class="card-text">{{ article | loc('abstract') | truncate(120) }}</p>
                     <div class="mt-auto">
                         <p class="article-views mt-2">
                             <i class="fa-regular fa-eye"></i>
@@ -44,11 +44,11 @@
                         </p>
                         <a href="{{ url_for('article_detail', article_id=article.id) }}"
                             class="btn btn-primary btn-sm mb-2 w-100">
-                            {{ "جزئیات مقاله" if lang == "fa" else "View Details" }}
+                            {{ t.ARTICLE_DETAILS }}
                         </a>
                         <a href="{{ url_for('download_article', filename=article.file) }}"
                             class="btn btn-outline-primary btn-sm w-100">
-                            ⬇ {{ "دانلود PDF" if lang == "fa" else "Download PDF" }}
+                            ⬇ {{ t.DOWNLOAD_PDF }}
                         </a>
 
                     </div>
@@ -59,7 +59,7 @@
     </div>
     {% else %}
     <p class="text-center text-muted">
-        {{ "مقاله‌ای ثبت نشده است." if lang == "fa" else "No articles available." }}
+        {{ t.NO_ARTICLES }}
     </p>
     {% endif %}
 

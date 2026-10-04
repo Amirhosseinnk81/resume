@@ -116,6 +116,27 @@ def _register_jinja(app):
         except (TypeError, ValueError):
             return value
 
+    @app.template_filter("loc")
+    def localized(entry, field):
+        """
+        Pick the language-appropriate variant of a content field.
+
+        content.py carries both `role` and `role_en` (and the same for
+        company, desc, degree, university, year). The templates only ever
+        read the Persian key, so the English site rendered Persian job
+        titles, employers and dates. Falls back to the Persian value when no
+        translation exists.
+        """
+        if not isinstance(entry, dict):
+            return entry
+
+        if session.get("lang", DEFAULT_LANG) == "en":
+            translated = entry.get(f"{field}_en")
+            if translated:
+                return translated
+
+        return entry.get(field, "")
+
 
 def _register_hooks(app):
 

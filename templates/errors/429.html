@@ -1,11 +1,11 @@
 {% extends 'errors/_error_base.html' %}
 
-{% block title %}{{ 'درخواست بیش از حد' if lang == 'fa' else 'Too many requests' }} | {{ NAME }}{% endblock %}
+{% block title %}{{ t.ERR_429_TITLE }} | {{ t.NAME }}{% endblock %}
 
 {% block meta_og %}<meta name="robots" content="noindex">{% endblock %}
 {% block meta_twitter %}{% endblock %}
 {% block structured_data %}{% endblock %}
 
 {% block error_code %}429{% endblock %}
-{% block error_title %}{{ 'درخواست بیش از حد' if lang == 'fa' else 'Too many requests' }}{% endblock %}
-{% block error_body %}{{ 'تعداد درخواست‌های شما بیش از حد مجاز بوده است. لطفاً کمی بعد دوباره تلاش کنید.' if lang == 'fa' else 'You have sent too many requests. Please try again shortly.' }}{% endblock %}
+{% block error_title %}{{ t.ERR_429_TITLE }}{% endblock %}
+{% block error_body %}{{ t.ERR_429_BODY }}{% endblock %}

@@ -25,7 +25,9 @@ def _apply(project, data):
 
     for field in (
         "title",
+        "title_en",
         "description",
+        "description_en",
         "github",
         "demo",
         "image",

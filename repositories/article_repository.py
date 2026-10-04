@@ -11,7 +11,17 @@ from models import Article
 
 def _apply(article, data):
 
-    for field in ("title", "abstract", "authors", "file", "language", "image"):
+    for field in (
+        "title",
+        "title_en",
+        "abstract",
+        "abstract_en",
+        "authors",
+        "authors_en",
+        "file",
+        "language",
+        "image",
+    ):
         if field in data:
             setattr(article, field, data[field] or "")
 
