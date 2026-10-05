@@ -1,5 +1,8 @@
 line-length = 100
-target-version = "py311"
+# Must match the OLDEST Python the app is deployed on, not the newest it
+# is developed on. With py311 here, pyupgrade rewrote `timezone.utc` to
+# `datetime.UTC` (3.11+), which crashed the 3.10 production runtime.
+target-version = "py310"
 
 [lint]
 select = ["E", "F", "W", "I", "B", "UP", "C4"]

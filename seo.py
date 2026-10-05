@@ -7,7 +7,7 @@ article URLs at all. For a site that already has a database of content,
 generating it is both more correct and less work to keep correct.
 """
 
-from datetime import UTC, date, datetime
+from datetime import date, datetime, timezone
 from xml.sax.saxutils import escape
 
 from flask import current_app, url_for
@@ -199,9 +199,9 @@ def build_sitemap(projects, articles):
 
 def _rfc822(value):
     if isinstance(value, datetime):
-        dt = value if value.tzinfo else value.replace(tzinfo=UTC)
+        dt = value if value.tzinfo else value.replace(tzinfo=timezone.utc)
     else:
-        dt = datetime.now(UTC)
+        dt = datetime.now(timezone.utc)
     return dt.strftime("%a, %d %b %Y %H:%M:%S %z")
 
 
@@ -233,7 +233,7 @@ def build_rss(articles, lang="fa"):
         f"    <link>{escape(site_url())}</link>\n"
         f"    <description>{escape(TAGLINE)}</description>\n"
         f"    <language>{'fa-IR' if lang == 'fa' else 'en-US'}</language>\n"
-        f"    <lastBuildDate>{_rfc822(datetime.now(UTC))}</lastBuildDate>\n"
+        f"    <lastBuildDate>{_rfc822(datetime.now(timezone.utc))}</lastBuildDate>\n"
         f'    <atom:link href="{escape(absolute(url_for("rss_feed")))}" '
         'rel="self" type="application/rss+xml" />\n'
         + "\n".join(items)

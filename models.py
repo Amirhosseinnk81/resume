@@ -15,13 +15,13 @@ The repository functions keep their exact previous signatures and still
 return plain dicts, so routes and templates did not need to change.
 """
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from extensions import db
 
 
 def _utcnow():
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 class Project(db.Model):

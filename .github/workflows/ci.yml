@@ -12,7 +12,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        # 3.10 is the floor: it is what the production host (Liara) runs.
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
@@ -55,10 +56,20 @@ jobs:
           cache: pip
 
       - name: Install linters
-        run: pip install ruff
+        run: pip install ruff vermin
 
       - name: Ruff
         run: ruff check . --output-format=github
+
+      # Guards the deployment floor. ruff's pyupgrade rules once rewrote
+      # `timezone.utc` into `datetime.UTC` because ruff.toml targeted py311,
+      # which booted fine in CI and then crashed the 3.10 production host.
+      # vermin reads the actual APIs used, not just syntax. The trailing
+      # dash in 3.10- means "3.10 or older"; plain 3.10 means "exactly
+      # 3.10" and fails on code that would also run on 3.7.
+      - name: Verify the code still runs on Python 3.10
+        run: |
+          vermin --no-tips --target=3.10 --violations             app.py models.py seo.py config.py content.py extensions.py wsgi.py             admin/ repositories/ scripts/
 
   security:
     runs-on: ubuntu-latest

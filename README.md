@@ -1,7 +1,7 @@
 # رزومه و نمونه‌کار — امیرحسین نعیمائی
 
 [![CI](https://github.com/Amirhosseinnk81/resume/actions/workflows/ci.yml/badge.svg)](https://github.com/Amirhosseinnk81/resume/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-000000?logo=flask&logoColor=white)
 
 وب‌اپ شخصی دوزبانه (فارسی/انگلیسی) برای ارائهٔ رزومه، پروژه‌ها و مقالات،
@@ -102,7 +102,7 @@ scripts/
 
 ## راه‌اندازی
 
-نیازمندی: **Python 3.11+**
+نیازمندی: **Python 3.10+** (نسخهٔ production روی لیارا ۳.۱۰ است)
 
 ```bash
 git clone https://github.com/Amirhosseinnk81/resume.git
@@ -216,7 +216,7 @@ pytest --cov=. --cov-report=term-missing
 | `test_pageviews.py` | شمارش بازدید و موارد استثنا |
 | `test_seo.py` | sitemap، RSS، JSON-LD، canonical، hreflang |
 
-CI روی هر push و PR اجرا می‌شود: تست روی Python 3.11/3.12/3.13، `ruff`،
+CI روی هر push و PR اجرا می‌شود: تست روی Python 3.10/3.11/3.12/3.13، `ruff`،
 `pip-audit`، و یک گام که اگر `.env` کامیت شده باشد build را می‌شکند.
 
 ---
