@@ -70,6 +70,29 @@ def test_degenerate_names_get_a_safe_default(name, upload_dir):
     assert len(result) > len(".pdf")
 
 
+def test_windows_separators_are_treated_as_separators(upload_dir):
+    r"""
+    os.path.basename is platform-dependent: on Linux a backslash is an
+    ordinary filename character, so "..\..\windows\system32\config" kept its
+    ".." segments and collapsed to "....windowssystem32config" instead of
+    "config". Not exploitable — the containment check still held — but the
+    result differed between a Windows dev machine and the Linux CI runner,
+    which is how this was found.
+    """
+    name = safe_upload_filename(r"..\..\windows\system32\config.pdf", upload_dir)
+
+    assert name.endswith("config.pdf")
+    assert ".." not in name
+    assert "\\" not in name
+
+
+def test_drive_letter_path_keeps_only_the_filename(upload_dir):
+    name = safe_upload_filename(r"C:\Users\me\report.pdf", upload_dir)
+
+    assert name.endswith("report.pdf")
+    assert ":" not in name
+
+
 def test_windows_illegal_characters_removed(upload_dir):
     name = safe_upload_filename('a<b>c:d"e|f?g*h.pdf', upload_dir)
 
