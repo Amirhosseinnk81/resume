@@ -42,6 +42,26 @@ DEPLOY_DEFAULTS = {
 CRITICAL = {"SECRET_KEY", "ADMIN_USERNAME", "ADMIN_PASSWORD_HASH", "SITE_URL"}
 
 
+def looks_like_a_container():
+    """
+    Detect being run inside the deployed container rather than on the
+    developer's machine. .env is gitignored and never deployed, so running
+    here finds nothing to send — and the variables belong to the platform,
+    not to a container that is replaced on every deploy.
+    """
+    if os.path.exists("/.dockerenv"):
+        return True
+
+    try:
+        with open("/proc/1/cgroup", encoding="utf-8") as handle:
+            return any(
+                marker in handle.read()
+                for marker in ("docker", "kubepods", "containerd")
+            )
+    except OSError:
+        return False
+
+
 def read_env(path):
     """Minimal .env parser: KEY=VALUE, '#' comments, optional quotes."""
     values = {}
@@ -82,6 +102,29 @@ def main():
         help="Show what would be sent without calling the CLI.",
     )
     args = parser.parse_args()
+
+    if not os.path.exists(args.env_file):
+        print(f"No .env at {args.env_file}\n", file=sys.stderr)
+
+        if looks_like_a_container():
+            print(
+                "This looks like the deployed container. Two reasons that\n"
+                "cannot work:\n"
+                "  1. .env is gitignored, so it was never deployed here.\n"
+                "  2. Environment variables belong to the Liara app, not to a\n"
+                "     container that is replaced on the next deploy.\n\n"
+                "Run this on your own machine instead, from the project\n"
+                "directory that holds .env.",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                "Run this from the project directory that holds .env, or pass\n"
+                "--env-file with its path. Copy .env.example to .env first if\n"
+                "you have not created one.",
+                file=sys.stderr,
+            )
+        return 1
 
     env = read_env(args.env_file)
 
