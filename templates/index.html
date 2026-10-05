@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}امیرحسین نعیمائی | صفحه اصلی{% endblock %}
-{% block meta_description %}رزومه شخصی من شامل معرفی، پروژه‌ها، مهارت‌ها و راه‌های تماس.{% endblock %}
+{% block title %}{{ t.PAGE_HOME_TITLE }}{% endblock %}
+{% block meta_description %}{{ t.PAGE_HOME_DESC }}{% endblock %}
 
-{% block og_title %}رزومه من{% endblock %}
-{% block og_desc %}معرفی من، پروژه‌ها و مهارت‌های برنامه‌نویسی و طراحی وب.{% endblock %}
+{% block og_title %}{{ t.OG_HOME_TITLE }}{% endblock %}
+{% block og_desc %}{{ t.OG_HOME_DESC }}{% endblock %}
 
-{% block tw_title %}رزومه من{% endblock %}
-{% block tw_desc %}معرفی من، پروژه‌ها و مهارت‌های برنامه‌نویسی و طراحی وب.{% endblock %}
+{% block tw_title %}{{ t.OG_HOME_TITLE }}{% endblock %}
+{% block tw_desc %}{{ t.OG_HOME_DESC }}{% endblock %}
 
 {% block content %}
 <section class="hero-section">
@@ -31,15 +31,15 @@
             <h1 class="hero-title">
 
                 <span class="hero-greeting">
-                    سلام، من
+                    {{ t.HERO_GREETING }}
                 </span>
 
                 <span class="hero-name">
-                    {{ NAME }}
+                    {{ t.NAME }}
                 </span>
 
                 <span class="hero-ending">
-                    هستم.
+                    {{ t.HERO_SUFFIX }}
                 </span>
 
             </h1>
@@ -47,17 +47,14 @@
 
             <h2 class="hero-subtitle">
 
-                متخصص IT و توسعه‌دهنده نرم‌افزار
+                {{ t.HERO_ROLE }}
 
             </h2>
 
 
             <p class="hero-description">
 
-                در زمینه توسعه نرم‌افزار، زیرساخت IT،
-                شبکه و سیستم‌های اطلاعاتی فعالیت می‌کنم
-                و روی ساخت راهکارهای کاربردی و قابل توسعه
-                تمرکز دارم.
+                {{ t.HERO_INTRO }}
 
             </p>
 
@@ -69,7 +66,7 @@
 
                     <i class="fa-solid fa-code"></i>
 
-                    مشاهده پروژه‌ها
+                    {{ t.BTN_PROJECTS }}
 
                 </a>
 
@@ -78,7 +75,7 @@
 
                     <i class="fa-solid fa-file-arrow-down"></i>
 
-                    دانلود رزومه
+                    {{ t.BTN_RESUME }}
 
                 </a>
 
@@ -130,7 +127,7 @@
                     <img src="{{ url_for(
                             'static',
                             filename='images/profile.jpg'
-                        ) }}" alt="{{ NAME }}" class="hero-image">
+                        ) }}" alt="{{ t.NAME }}" class="hero-image">
 
                 </div>
 
@@ -193,7 +190,7 @@
                     </strong>
 
                     <span>
-                        پروژه
+                        {{ t.STAT_PROJECTS }}
                     </span>
 
                 </div>
@@ -220,7 +217,7 @@
                     </strong>
 
                     <span>
-                        مقاله
+                        {{ t.STAT_ARTICLES }}
                     </span>
 
                 </div>
@@ -247,7 +244,7 @@
                     </strong>
 
                     <span>
-                        مهارت
+                        {{ t.STAT_SKILLS }}
                     </span>
 
                 </div>
@@ -276,14 +273,14 @@
             </span>
 
             <h2>
-                پروژه‌های منتخب
+                {{ t.FEATURED_PROJECTS }}
             </h2>
 
         </div>
 
         <a href="{{ url_for('projects') }}" class="section-link">
 
-            مشاهده همه
+            {{ t.VIEW_ALL }}
 
             <i class="fa-solid fa-arrow-left"></i>
 
@@ -324,12 +321,12 @@
                 <div class="project-card-body">
 
                     <h3>
-                        {{ project.title }}
+                        {{ project | loc('title') }}
                     </h3>
 
 
                     <p>
-                        {{ project.description }}
+                        {{ project | loc('description') }}
                     </p>
 
 
@@ -374,7 +371,7 @@
                     {% else %}
 
                     <span class="project-private">
-                        پروژه خصوصی
+                        {{ t.PRIVATE_PROJECT }}
                     </span>
 
                     {% endif %}
@@ -401,7 +398,7 @@
                 <i class="fa-solid fa-folder-open"></i>
 
                 <p>
-                    هنوز پروژه‌ای ثبت نشده است.
+                    {{ t.NO_PROJECTS_YET }}
                 </p>
 
             </div>
@@ -429,14 +426,14 @@
             </span>
 
             <h2>
-                آخرین مقالات
+                {{ t.LATEST_ARTICLES }}
             </h2>
 
         </div>
 
         <a href="{{ url_for('articles') }}" class="section-link">
 
-            مشاهده همه
+            {{ t.VIEW_ALL }}
 
             <i class="fa-solid fa-arrow-left"></i>
 
@@ -462,7 +459,7 @@
                     <img src="{{ url_for(
                             'static',
                             filename='images/' ~ article.image
-                        ) }}" alt="{{ article.title }}" loading="lazy">
+                        ) }}" alt="{{ article | loc('title') }}" loading="lazy">
 
                     {% else %}
 
@@ -488,7 +485,7 @@
                         </span>
 
                         <span>
-                            {{ article.authors }}
+                            {{ article | loc('authors') }}
                         </span>
 
                     </div>
@@ -507,12 +504,12 @@
                 <div class="article-card-body">
 
                     <h3>
-                        {{ article.title }}
+                        {{ article | loc('title') }}
                     </h3>
 
 
                     <p>
-                        {{ article.abstract }}
+                        {{ article | loc('abstract') }}
                     </p>
 
                 </div>
@@ -536,7 +533,7 @@
                             filename=article.file
                         ) }}" class="article-read-more">
 
-                        مطالعه مقاله
+                        {{ t.READ_ARTICLE }}
 
                         <i class="fa-solid fa-arrow-left"></i>
 
@@ -557,7 +554,7 @@
                 <i class="fa-solid fa-newspaper"></i>
 
                 <p>
-                    هنوز مقاله‌ای منتشر نشده است.
+                    {{ t.NO_ARTICLES_YET }}
                 </p>
 
             </div>
@@ -585,13 +582,11 @@
             </span>
 
             <h2>
-                پروژه‌ای در ذهن داری؟
+                {{ t.CTA_TITLE }}
             </h2>
 
             <p>
-                اگر درباره یک پروژه، همکاری یا موضوع فنی
-                می‌خواهی صحبت کنیم، از طریق صفحه تماس
-                با من در ارتباط باش.
+                {{ t.CTA_BODY }}
             </p>
 
         </div>
@@ -602,7 +597,7 @@
             <a href="{{ url_for('contact') }}" class="contact-cta-button">
 
                 <span>
-                    تماس با من
+                    {{ t.CONTACT_TITLE }}
                 </span>
 
                 <i class="fa-solid fa-arrow-left"></i>

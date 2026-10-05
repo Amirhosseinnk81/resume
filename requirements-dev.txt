@@ -1,0 +1,9 @@
+-r requirements.txt
+
+# Testing
+pytest==8.4.2
+pytest-cov==7.0.0
+
+# Production servers (installed here so CI can import-check them)
+gunicorn==23.0.0 ; sys_platform != "win32"
+waitress==3.0.2

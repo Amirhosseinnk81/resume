@@ -1,406 +1,542 @@
+"""
+Application factory and public routes.
+
+Previously this file created a module-level `app` object and assigned every
+setting onto it directly, which made it impossible to build the app with a
+different config — and therefore impossible to test. Content constants
+(translations, experience, education) moved to content.py; SEO generation
+moved to seo.py.
+"""
+
+import json
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
 from datetime import datetime
-from flask_mail import Mail, Message
-from flask import send_from_directory
+
 from dotenv import load_dotenv
+from flask import (
+    Flask,
+    Response,
+    abort,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for,
+)
+from flask_mail import Message
 from flask_wtf.csrf import CSRFError
 
-# Load .env BEFORE anything below reads an environment variable — previously
-# SECRET_KEY was read one line too early and always fell back to the default.
+# Load .env before any config class reads an environment variable.
 load_dotenv()
 
-from extensions import csrf, limiter
-from admin import admin_bp
-from repositories.project_repository import get_projects
-from repositories.article_repository import (
-    get_articles as repo_get_articles,
+from admin import admin_bp  # noqa: E402
+from admin.forms import ContactForm  # noqa: E402
+from admin.utils import article_upload_exists  # noqa: E402
+from config import get_config  # noqa: E402
+from content import (  # noqa: E402
+    BUILT_WITH,
+    DEFAULT_LANG,
+    EDUCATION,
+    EXPERIENCES,
+    NAME,
+    PROFILE,
+    SITE_TITLE,
+    TAGLINE,
+    TRANSLATIONS,
+    get_skill_icon,
+)
+from extensions import csrf, db, limiter, mail  # noqa: E402
+from repositories import pageview_repository as views_repo  # noqa: E402
+from repositories.article_repository import (  # noqa: E402
     get_article_by_id,
+    get_articles,
     increment_views,
 )
-from repositories.message_repository import create_message
-from repositories.settings_repository import get_settings
-
-app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production")
-
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
-app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER")
-
-CONTACT_RECIPIENT_EMAIL = os.getenv("CONTACT_RECIPIENT_EMAIL")
-
-mail = Mail(app)
-
-# --- CSRF protection ---------------------------------------------------
-# Every POST form in the project (login, contact, all admin create/edit/
-# delete actions) previously had no CSRF token, so a malicious external
-# page could trick a logged-in admin's browser into submitting a real
-# delete/edit request. CSRFProtect checks a token on every POST/PUT/DELETE
-# automatically; templates just need {{ csrf_token() }} in each <form>.
-csrf.init_app(app)
-
-
-@app.errorhandler(CSRFError)
-def handle_csrf_error(error):
-    flash("نشست شما منقضی شده یا نامعتبر است، لطفاً دوباره تلاش کنید.", "danger")
-    return redirect(request.referrer or url_for("home")), 400
-
-
-limiter.init_app(app)
-
-app.register_blueprint(admin_bp)
-
-
-UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads", "articles")
-ALLOWED_EXTENSIONS = {"pdf"}
-
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
-# No upload was size-limited before — a single request could exhaust disk space.
-app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB
-
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-# داده‌های دوزبانه
-translations = {
-"fa": {
-"SITE_TITLE": "رزومهٔ من",
-"NAME": "امیرحسین نعیمائی",
-"TAGLINE": "توسعه‌دهندهٔ بک‌اند | Flask | Python",
-"MENU_PROJECTS": "پروژه‌ها",
-"MENU_ABOUT": "درباره‌من",
-"MENU_CONTACT": "تماس",
-"BTN_RESUME": "دانلود رزومه",
-"BTN_PROJECTS": "مشاهدهٔ پروژه‌ها",
-"CONTACT_TITLE": "تماس با من",
-"CONTACT_NAME": "اسم",
-"CONTACT_EMAIL": "ایمیل",
-"CONTACT_MSG": "پیام",
-"CONTACT_SEND": "ارسال",
-"CONTACT_CLEAR": "پاک کردن",
-"MSG_SUCCESS": "پیام شما با موفقیت ارسال شد!",
-"MSG_ERROR": "لطفاً همهٔ فیلدها را پر کنید.",
-"LOCATION" : "نوشهر",
-},
-"en": {
-"SITE_TITLE": "My Resume",
-"NAME": "Amirhossein Naeimaei",
-"TAGLINE": "Backend Developer | Flask | Python",
-"MENU_PROJECTS": "Projects",
-"MENU_ABOUT": "About",
-"MENU_CONTACT": "Contact",
-"BTN_RESUME": "Download Resume",
-"BTN_PROJECTS": "See Projects",
-"CONTACT_TITLE": "Contact Me",
-"CONTACT_NAME": "name",
-"CONTACT_EMAIL": "E-mail",
-"CONTACT_MSG": "Message",
-"CONTACT_SEND": "Send",
-"CONTACT_CLEAR": "Clear",
-"MSG_SUCCESS": "Your message has been sent successfully!",
-"MSG_ERROR": "Please fill in all fields.",
-"LOCATION" : "Nowshahr",
-}
-}
-
-SKILL_ICON_MAP = {
-    "python": ("python", "3776AB"),
-    "flask": ("flask", "64748b"),
-    "javascript": ("javascript", "F7DF1E"),
-    "js": ("javascript", "F7DF1E"),
-    "django": ("django", "092E20"),
-    "git": ("git", "F05032"),
-    "git&github": ("git", "F05032"),
-    "github": ("github", "181717"),
-    "html": ("html5", "E34F26"),
-    "html/css": ("html5", "E34F26"),
-    "css": ("css3", "1572B6"),
-    "sql": ("mysql", "4479A1"),
-    "mysql": ("mysql", "4479A1"),
-    "postgresql": ("postgresql", "4169E1"),
-    "docker": ("docker", "2496ED"),
-    "react": ("react", "61DAFB"),
-    "vue": ("vuedotjs", "4FC08D"),
-    "linux": ("linux", "FCC624"),
-    "nginx": ("nginx", "009639"),
-    "redis": ("redis", "DC382D"),
-    "typescript": ("typescript", "3178C6"),
-    "bootstrap": ("bootstrap", "7952B3"),
-    "tailwind": ("tailwindcss", "06B6D4"),
-}
-
-
-def get_skill_icon(name):
-    icon, color = SKILL_ICON_MAP.get((name or "").strip().lower(), (None, "2563eb"))
-    return {"icon": icon, "color": color}
-
-
-app.jinja_env.filters["skill_icon"] = get_skill_icon
-
-profile = {
-"name": "امیرحسین نعیمائی",
-"job": "توسعه‌دهنده بک‌اند (Python/Flask)",
-"location": "مازندران، ایران",
-"email": "amirhossein.naimaei81@gmail.com"
-}
-
-# تنظیمات ساده
-SITE_TITLE = "رزومهٔ من"
-NAME = "امیرحسین نعیمائی"
-TAGLINE = "توسعه‌دهندهٔ بک‌اند | Flask | Python"
-LOCATION = "نوشهر"
-CONTACT_EMAIL = "amirhossein.naimaei81@gmail.com"
-
-# SOCIALS and SKILLS now live in data/settings.json (editable from
-# /admin/settings) instead of being hardcoded here. See repositories/settings_repository.py.
-
-
-EXPERIENCES = [
-{
-"year": "2021 - حالا",
-"role": "توسعه‌دهندهٔ بک‌اند",
-"company": "فریلنسر",
-"desc": "توسعه و نگهداری سرویس‌های میکروسرویسی با Flask و Docker"
-},
-{
-"year": "2023 - حالا",
-"role": "کارشناس شبکه و IT",
-"company": "هتل آراز",
-"desc": "مدیریت شبکه، CCTV و سیستم‌های تلفنی"
-}
-]
-
-
-EDUCATION = [
-{
-"year": "2018 - 2021",
-"degree": "دیپلم ریاضی و فیزیک",
-"university": "مدرسه شهید مدرس",
-"desc": "تحصیل در رشته ریاضی و فیزیک"
-},
-{
-"year": "2021 - 2023",
-"degree": "فوق دیپلم نرم‌افزار",
-"university": "دانشگاه آزاد اسلامی واحد چالوس",
-"desc": "گرایش نرم‌افزار و برنامه‌نویسی"
-},
-{
-"year": "2023 - 2025",
-"degree": "کارشناسی مهندسی کامپیوتر",
-"university": "دانشگاه آزاد اسلامی واحد چالوس",
-"desc": "گرایش نرم‌افزار، پروژه پایانی در زمینهٔ یادگیری ماشین"
-},
-{
-"year": "2025 - حالا",
-"degree": "کارشناسی ارشد مدیریت سیستم‌های اطلاعاتی",
-"university": "دانشگاه مارلیک نوشهر",
-"desc": "در حال حاضر دانشجو، تمرکز بر مدیریت سیستم‌ها و تحلیل داده‌ها"
-},
-]
-
-@app.before_request
-def set_lang():
-    if 'lang' not in session:
-        session['lang'] = 'fa' # پیش‌فرض فارسی
-
-@app.context_processor
-def inject_globals():
-    lang = session.get('lang', 'fa')
-    settings = get_settings()
-    return dict(
-        SITE_TITLE=SITE_TITLE,
-        NAME=NAME,
-        TAGLINE=TAGLINE,
-        SOCIALS=settings["socials"],
-        year=datetime.now().year,
-        current_year=datetime.now().year,
-        t=translations[lang],
-        lang=lang,
+from repositories.message_repository import create_message  # noqa: E402
+from repositories.project_repository import get_project_by_id, get_projects  # noqa: E402
+from repositories.settings_repository import (  # noqa: E402
+    get_settings,
+    get_skills_by_category,
+)
+from seo import (  # noqa: E402
+    article_schema,
+    breadcrumb_schema,
+    build_rss,
+    build_sitemap,
+    person_schema,
+    project_schema,
 )
 
 
-@app.route("/lang/<code>")
-def switch_lang(code):
-    if code in translations:
-        session["lang"] = code
+def create_app(config_name=None):
 
-    return redirect(
-        request.referrer or url_for("home")
-    )
+    app = Flask(__name__)
+    app.config.from_object(get_config(config_name))
 
-@app.route("/")
-def home():
+    _init_extensions(app)
+    _register_jinja(app)
+    _register_hooks(app)
+    _register_routes(app)
+    _register_errors(app)
 
-    projects = get_projects()
-    articles = repo_get_articles()
-    settings = get_settings()
+    app.register_blueprint(admin_bp)
 
-    return render_template(
-        "index.html",
-        skills=settings["skills"],
-        projects=projects,
-        articles=articles,
-        profile=profile
-    )
+    with app.app_context():
+        # create_all is enough for a single-file SQLite schema of this size.
+        # Introduce Alembic/Flask-Migrate once the schema starts changing
+        # against data you cannot afford to rebuild.
+        db.create_all()
 
-@app.route("/projects")
-def projects():
-
-    projects = get_projects()
-
-    return render_template(
-        "projects.html",
-        projects=projects
-    )
-    
-@app.route("/projects/<int:project_id>")
-def project_detail(project_id):
-
-    projects = get_projects()
-
-    project = next(
-        (
-            project
-            for project in projects
-            if project.get("id") == project_id
-        ),
-        None
-    )
-
-    if project is None:
-        return "Project not found", 404
-
-    return render_template(
-        "project_detail.html",
-        project=project
-    )
-
-@app.route("/about")
-def about():
-
-    settings = get_settings()
-
-    return render_template(
-        "about.html",
-        experiences=EXPERIENCES,
-        education=EDUCATION,
-        skills=settings["skills"]
-    )
-
-@app.route("/articles")
-def articles():
-
-    return render_template(
-        "articles.html",
-        articles=repo_get_articles()
-    )
+    return app
 
 
-@app.route("/articles/download/<filename>")
-def download_article(filename):
-
-    return send_from_directory(
-        app.config["UPLOAD_FOLDER"],
-        filename,
-        as_attachment=True
-    )
+# --- Wiring -----------------------------------------------------------
 
 
-@app.route("/articles/<int:article_id>")
-def article_detail(article_id):
+def _init_extensions(app):
+    db.init_app(app)
+    csrf.init_app(app)
+    mail.init_app(app)
 
-    article = get_article_by_id(article_id)
-
-    if not article:
-        flash("مقاله مورد نظر پیدا نشد", "danger")
-        return redirect(url_for("articles"))
-
-    article = increment_views(article_id)
-
-    return render_template("article_detail.html", article=article, lang="fa")
+    app.config.setdefault("RATELIMIT_STORAGE_URI", "memory://")
+    limiter.init_app(app)
 
 
-# Note: adding/editing/deleting articles now happens only in the admin panel
-# (/admin/articles) — the old public, unauthenticated /articles/add route
-# (which also pointed at a template that didn't exist) has been removed.
+def _register_jinja(app):
+    app.jinja_env.filters["skill_icon"] = get_skill_icon
+
+    @app.template_filter("thousands")
+    def thousands(value):
+        """1234 -> 1,234 for the view counters."""
+        try:
+            return f"{int(value):,}"
+        except (TypeError, ValueError):
+            return value
+
+    @app.template_filter("loc")
+    def localized(entry, field):
+        """
+        Pick the language-appropriate variant of a content field.
+
+        content.py carries both `role` and `role_en` (and the same for
+        company, desc, degree, university, year). The templates only ever
+        read the Persian key, so the English site rendered Persian job
+        titles, employers and dates. Falls back to the Persian value when no
+        translation exists.
+        """
+        if not isinstance(entry, dict):
+            return entry
+
+        if session.get("lang", DEFAULT_LANG) == "en":
+            translated = entry.get(f"{field}_en")
+            if translated:
+                return translated
+
+        return entry.get(field, "")
 
 
-@app.route("/contact", methods=["GET", "POST"])
-@limiter.limit("5 per hour", methods=["POST"])
-def contact():
-    if request.method == "POST":
+def _register_hooks(app):
 
-        # Honeypot: a hidden field real visitors never see or fill in.
-        # If it's non-empty, a bot filled it — silently pretend success.
-        if request.form.get("website", "").strip():
-            flash("پیام شما با موفقیت ارسال شد!", "success")
-            return redirect(url_for("contact"))
+    @app.before_request
+    def set_lang():
+        if session.get("lang") not in TRANSLATIONS:
+            session["lang"] = DEFAULT_LANG
 
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip()
-        message = request.form.get("message", "").strip()
-
-        if not name or not email or not message:
-            flash("لطفاً همهٔ فیلدها را پر کنید.", "danger")
-            return redirect(url_for("contact"))
-
-        # Always save the message first, regardless of whether email sending works,
-        # so a submission is never silently lost.
-        create_message(name, email, message)
+    @app.after_request
+    def count_view(response):
+        """
+        Record a hit for successful HTML GETs on public pages only. Skips
+        the admin panel, static files, bots fetching feeds, and anything
+        that is not a 2xx HTML response.
+        """
+        if (
+            request.method != "GET"
+            or response.status_code >= 300
+            or request.blueprint == "admin"
+            or request.endpoint in (None, "static")
+            or "text/html" not in response.content_type
+        ):
+            return response
 
         try:
-            msg = Message(
-                subject=f"پیام جدید از {name}",
-                recipients=[CONTACT_RECIPIENT_EMAIL],
-                body=f"From: {name} <{email}>\n\n{message}"
+            views_repo.record_view(request.path)
+        except Exception:  # pragma: no cover - never fail a page over stats
+            db.session.rollback()
+            current_app.logger.exception("Failed to record page view")
+
+        return response
+
+    @app.after_request
+    def set_cache_headers(response):
+        """
+        Public pages previously shipped no Cache-Control at all, so every
+        visit re-rendered and re-downloaded everything. The admin panel and
+        anything with a session flash stay uncacheable.
+        """
+        if request.blueprint == "admin":
+            response.headers.setdefault("Cache-Control", "no-store, private")
+            return response
+
+        if request.endpoint == "static":
+            seconds = current_app.config["STATIC_CACHE_SECONDS"]
+            response.headers.setdefault(
+                "Cache-Control", f"public, max-age={seconds}, immutable"
             )
-            mail.send(msg)
+            return response
+
+        if request.method == "GET" and response.status_code == 200:
+            seconds = current_app.config["PUBLIC_CACHE_SECONDS"]
+            response.headers.setdefault(
+                "Cache-Control", f"public, max-age=0, s-maxage={seconds}, must-revalidate"
+            )
+
+        return response
+
+    @app.after_request
+    def set_security_headers(response):
+        """Baseline hardening headers the site previously sent none of."""
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault(
+            "Permissions-Policy", "geolocation=(), microphone=(), camera=()"
+        )
+        return response
+
+    @app.teardown_request
+    def rollback_on_error(exception):
+        # Leaves no half-finished transaction behind if a view raised.
+        if exception is not None:
+            db.session.rollback()
+
+    @app.context_processor
+    def inject_globals():
+        lang = session.get("lang", DEFAULT_LANG)
+        # .get() guards the KeyError that a tampered or stale session cookie
+        # could raise on *every* page.
+        translations = TRANSLATIONS.get(lang, TRANSLATIONS[DEFAULT_LANG])
+
+        settings = get_settings()
+        now = datetime.now()
+
+        site_url = current_app.config["SITE_URL"].rstrip("/")
+        canonical_url = site_url + (request.path if request else "/")
+
+        return dict(
+            SITE_TITLE=SITE_TITLE,
+            NAME=NAME,
+            TAGLINE=TAGLINE,
+            PROFILE=PROFILE,
+            SOCIALS=settings["socials"],
+            BUILT_WITH=BUILT_WITH,
+            year=now.year,
+            current_year=now.year,
+            t=translations,
+            lang=lang,
+            canonical_url=canonical_url,
+            person_schema=person_schema(settings, lang),
+        )
+
+
+# --- Routes -----------------------------------------------------------
+
+
+def _register_routes(app):
+
+    @app.route("/")
+    def home():
+        return render_template(
+            "index.html",
+            skills=get_settings()["skills"],
+            skill_groups=get_skills_by_category(),
+            projects=get_projects(),
+            articles=get_articles(),
+            profile=PROFILE,
+        )
+
+    @app.route("/projects")
+    def projects():
+        return render_template("projects.html", projects=get_projects())
+
+    @app.route("/projects/<int:project_id>")
+    def project_detail(project_id):
+        project = get_project_by_id(project_id)
+
+        if project is None:
+            # Was a bare `return "Project not found", 404` with no template.
+            abort(404)
+
+        return render_template(
+            "project_detail.html",
+            project=project,
+            page_schema=project_schema(project),
+            breadcrumbs=breadcrumb_schema(
+                [
+                    ("Home", url_for("home")),
+                    ("Projects", url_for("projects")),
+                    (project["title"], url_for("project_detail", project_id=project_id)),
+                ]
+            ),
+        )
+
+    @app.route("/about")
+    def about():
+        return render_template(
+            "about.html",
+            experiences=EXPERIENCES,
+            education=EDUCATION,
+            skills=get_settings()["skills"],
+            skill_groups=get_skills_by_category(),
+        )
+
+    @app.route("/articles")
+    def articles():
+        return render_template("articles.html", articles=get_articles())
+
+    @app.route("/articles/<int:article_id>")
+    def article_detail(article_id):
+        article = get_article_by_id(article_id)
+
+        if not article:
+            abort(404)
+
+        article = increment_views(article_id)
+
+        return render_template(
+            "article_detail.html",
+            article=article,
+            page_schema=article_schema(article),
+            breadcrumbs=breadcrumb_schema(
+                [
+                    ("Home", url_for("home")),
+                    ("Articles", url_for("articles")),
+                    (article["title"], url_for("article_detail", article_id=article_id)),
+                ]
+            ),
+        )
+
+    @app.route("/articles/download/<path:filename>")
+    def download_article(filename):
+        """
+        Only serves a file that an article actually references, and only
+        from the uploads directory. Previously any name was passed straight
+        to send_from_directory, which 500'd on a miss and was not restricted
+        to real article files.
+        """
+        known = {
+            article["file"]
+            for article in get_articles()
+            if article.get("file")
+        }
+
+        if filename not in known:
+            abort(404)
+
+        upload_folder = current_app.config["UPLOAD_FOLDER"]
+
+        if not article_upload_exists(filename, upload_folder):
+            current_app.logger.warning(
+                "Article file missing from disk: %s", filename
+            )
+            abort(404)
+
+        return send_from_directory(upload_folder, filename, as_attachment=True)
+
+    @app.route("/contact", methods=["GET", "POST"])
+    @limiter.limit("5 per hour", methods=["POST"])
+    def contact():
+
+        form = ContactForm()
+
+        if form.validate_on_submit():
+
+            # Honeypot: a bot filled the hidden field — pretend success and
+            # store nothing.
+            if (form.website.data or "").strip():
+                flash(TRANSLATIONS[session.get("lang", DEFAULT_LANG)]["MSG_SUCCESS"], "success")
+                return redirect(url_for("contact"))
+
+            # Store first, so a submission is never lost to an SMTP failure.
+            create_message(
+                form.name.data.strip(),
+                form.email.data.strip(),
+                form.message.data.strip(),
+            )
+
+            recipient = current_app.config.get("CONTACT_RECIPIENT_EMAIL")
+
+            if recipient:
+                try:
+                    mail.send(
+                        Message(
+                            subject=f"پیام جدید از {form.name.data.strip()}",
+                            recipients=[recipient],
+                            body=(
+                                f"From: {form.name.data.strip()} "
+                                f"<{form.email.data.strip()}>\n\n"
+                                f"{form.message.data.strip()}"
+                            ),
+                        )
+                    )
+                except Exception:
+                    current_app.logger.exception(
+                        "Failed to send contact-form notification email"
+                    )
+            else:
+                current_app.logger.warning(
+                    "CONTACT_RECIPIENT_EMAIL is not set; message stored only."
+                )
+
+            flash(TRANSLATIONS[session.get("lang", DEFAULT_LANG)]["MSG_SUCCESS"], "success")
+            return redirect(url_for("contact"))
+
+        return render_template("contact.html", form=form)
+
+    # --- Language -----------------------------------------------------
+
+    def _safe_referrer():
+        """Only follow a same-origin referrer."""
+        referrer = request.referrer or ""
+        if referrer.startswith(request.host_url):
+            return referrer
+        return url_for("home")
+
+    @app.route("/lang/<code>")
+    def switch_lang(code):
+        if code in TRANSLATIONS:
+            session["lang"] = code
+        return redirect(_safe_referrer())
+
+    @app.route("/toggle-lang")
+    def toggle_lang():
+        session["lang"] = "en" if session.get("lang", DEFAULT_LANG) == "fa" else "fa"
+        return redirect(_safe_referrer())
+
+    # --- Files & feeds ------------------------------------------------
+
+    @app.route("/resume")
+    def download_resume():
+        return send_from_directory(
+            app.root_path, "myresume.pdf", as_attachment=True
+        )
+
+    @app.route("/robots.txt")
+    def robots_txt():
+        """
+        Generated so the Sitemap line always matches SITE_URL, and so the
+        admin panel is explicitly excluded from crawling.
+        """
+        site_url = current_app.config["SITE_URL"].rstrip("/")
+        body = (
+            "User-agent: *\n"
+            "Allow: /\n"
+            "Disallow: /admin\n"
+            "Disallow: /articles/download/\n"
+            f"Sitemap: {site_url}{url_for('sitemap_xml')}\n"
+        )
+        return Response(body, mimetype="text/plain")
+
+    @app.route("/sitemap.xml")
+    def sitemap_xml():
+        """
+        Built from the database. The old static file listed only the five
+        top-level pages and had a lastmod frozen at 2026-09-13.
+        """
+        return Response(
+            build_sitemap(get_projects(), get_articles()),
+            mimetype="application/xml",
+        )
+
+    @app.route("/feed.xml")
+    def rss_feed():
+        return Response(
+            build_rss(get_articles(), session.get("lang", DEFAULT_LANG)),
+            mimetype="application/rss+xml",
+        )
+
+    @app.route("/manifest.webmanifest")
+    def manifest():
+        """Minimal PWA manifest so the site is installable on mobile."""
+        return Response(
+            json.dumps(
+                {
+                    "name": f"{NAME} — {TAGLINE}",
+                    "short_name": NAME,
+                    "start_url": url_for("home"),
+                    "display": "standalone",
+                    "background_color": "#0b1120",
+                    "theme_color": "#0f172a",
+                    "icons": [
+                        {
+                            "src": url_for(
+                                "static", filename="images/apple-touch-icon.png"
+                            ),
+                            "sizes": "180x180",
+                            "type": "image/png",
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            mimetype="application/manifest+json",
+        )
+
+    @app.route("/healthz")
+    def healthz():
+        """Liveness probe for the container / reverse proxy."""
+        try:
+            db.session.execute(db.text("SELECT 1"))
         except Exception:
-            # Message is safely stored in data/messages.json and visible in
-            # /admin/messages even if the SMTP send fails (bad credentials,
-            # network issue, etc.) — don't 500 the page on the visitor.
-            app.logger.exception("Failed to send contact-form notification email")
-
-        flash("پیام شما با موفقیت ارسال شد!", "success")
-        return redirect(url_for("contact"))
-
-    return render_template("contact.html")
-
-@app.route("/toggle-lang")
-def toggle_lang():
-    current = session.get("lang", "fa")
-    session["lang"] = "en" if current == "fa" else "fa"
-    return redirect(request.referrer or url_for("home"))
-
-@app.route("/robots.txt")
-def robots_txt():
-    return send_from_directory(app.root_path, "robots.txt")
+            return {"status": "error"}, 503
+        return {"status": "ok"}
 
 
-@app.route("/sitemap.xml")
-def sitemap_xml():
-    return send_from_directory(app.root_path, "sitemap.xml", mimetype="application/xml")
+# --- Errors -----------------------------------------------------------
 
 
-@app.route("/resume")
-def download_resume():
-    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), "myresume.pdf", as_attachment=True)
+def _register_errors(app):
 
-@app.errorhandler(413)
-def file_too_large(error):
-    flash("حجم فایل ارسالی بیش از حد مجاز (۲۰ مگابایت) است.", "danger")
-    return redirect(request.referrer or url_for("home")), 413
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(error):
+        flash("نشست شما منقضی شده یا نامعتبر است، لطفاً دوباره تلاش کنید.", "danger")
+        return redirect(request.referrer or url_for("home")), 400
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(413)
+    def file_too_large(error):
+        flash("حجم فایل ارسالی بیش از حد مجاز (۲۰ مگابایت) است.", "danger")
+        return redirect(request.referrer or url_for("home")), 413
+
+    @app.errorhandler(429)
+    def rate_limited(error):
+        return render_template("errors/429.html"), 429
+
+    @app.errorhandler(500)
+    @app.errorhandler(Exception)
+    def server_error(error):
+        # Re-raise HTTP errors so their own handlers/status codes stand.
+        from werkzeug.exceptions import HTTPException
+
+        if isinstance(error, HTTPException):
+            return error
+
+        db.session.rollback()
+        current_app.logger.exception("Unhandled application error")
+        return render_template("errors/500.html"), 500
+
+
+# Module-level app for `flask run` and for gunicorn via wsgi.py.
+app = create_app()
+
 
 if __name__ == "__main__":
-    # FLASK_DEBUG must be explicitly set to "1" to enable the interactive
-    # debugger — it was previously hardcoded to True, which is a remote
-    # code execution risk if this is ever run in production via `python app.py`.
-    # For real deployment, run behind a proper WSGI server (gunicorn/waitress)
-    # rather than this development server either way.
+    # FLASK_DEBUG must be explicitly "1" to enable the interactive debugger,
+    # which is remote code execution if ever exposed. For real deployment
+    # use gunicorn/waitress via wsgi.py rather than this server.
     app.run(debug=os.getenv("FLASK_DEBUG") == "1")

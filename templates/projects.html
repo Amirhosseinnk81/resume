@@ -1,28 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}
-امیرحسین نعیمائی | پروژه‌ها
-{% endblock %}
+{% block title %}{{ t.PAGE_PROJECTS_TITLE }}{% endblock %}
 
-{% block meta_description %}
-لیست پروژه‌های انجام‌شده در حوزه طراحی وب، نرم‌افزار و سیستم‌های هوشمند.
-{% endblock %}
+{% block meta_description %}{{ t.PAGE_PROJECTS_DESC }}{% endblock %}
 
-{% block og_title %}
-پروژه‌ها
-{% endblock %}
+{% block og_title %}{{ t.MENU_PROJECTS }}{% endblock %}
 
-{% block og_desc %}
-مشاهده پروژه‌های طراحی وب و نرم‌افزار انجام‌شده توسط من.
-{% endblock %}
+{% block og_desc %}{{ t.OG_PROJECTS_DESC }}{% endblock %}
 
-{% block tw_title %}
-پروژه‌ها
-{% endblock %}
+{% block tw_title %}{{ t.MENU_PROJECTS }}{% endblock %}
 
-{% block tw_desc %}
-مشاهده پروژه‌های طراحی وب و نرم‌افزار انجام‌شده توسط من.
-{% endblock %}
+{% block tw_desc %}{{ t.OG_PROJECTS_DESC }}{% endblock %}
 
 {% block content %}
 
@@ -64,7 +52,7 @@
                 <img src="{{ url_for(
                         'static',
                         filename='images/' ~ project.image
-                    ) }}" alt="{{ project.title }}" loading="lazy">
+                    ) }}" alt="{{ project | loc('title') }}" loading="lazy">
 
                 {% else %}
 
@@ -86,19 +74,19 @@
                     {% if project.status == "completed" %}
 
                     <span class="project-status completed">
-                        تکمیل شده
+                        {{ t.STATUS_COMPLETED }}
                     </span>
 
                     {% elif project.status == "in-progress" %}
 
                     <span class="project-status in-progress">
-                        در حال توسعه
+                        {{ t.STATUS_IN_PROGRESS }}
                     </span>
 
                     {% elif project.status == "planned" %}
 
                     <span class="project-status planned">
-                        برنامه‌ریزی شده
+                        {{ t.STATUS_PLANNED }}
                     </span>
 
                     {% endif %}
@@ -139,13 +127,26 @@
             <div class="project-page-card-content">
 
                 <h2>
-                    {{ project.title }}
+                    {{ project | loc('title') }}
                 </h2>
 
 
                 <p>
-                    {{ project.description }}
+                    {{ project | loc('description') }}
                 </p>
+
+
+                {#
+                  A concrete number per project, the way every reference
+                  portfolio presents one ("8,281 stars", "100k+ installs").
+                  Optional, set per project from the admin panel.
+                #}
+                {% if project.metric_value %}
+                <p class="project-metric">
+                    <span class="project-metric-value">{{ project.metric_value }}</span>
+                    {% if project.metric_label %}<span>{{ project.metric_label }}</span>{% endif %}
+                </p>
+                {% endif %}
 
 
                 <!-- Technologies -->
@@ -179,7 +180,7 @@
                 {% if project.github and project.github != "#" %}
 
                 <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="project-page-github"
-                    aria-label="مشاهده پروژه در GitHub">
+                    aria-label="{{ t.VIEW_ON_GITHUB }}">
 
                     <i class="fa-brands fa-github"></i>
 
@@ -207,8 +208,8 @@
                 <a href="{{ url_for(
                         'project_detail',
                         project_id=project.id
-                    ) }}" class="project-page-arrow" aria-label="مشاهده جزئیات {{ project.title }}"
-                    title="مشاهده جزئیات">
+                    ) }}" class="project-page-arrow" aria-label="مشاهده جزئیات {{ project | loc('title') }}"
+                    title="{{ t.VIEW_DETAILS }}">
 
                     <i class="fa-solid fa-arrow-left"></i>
 
@@ -232,11 +233,11 @@
             </div>
 
             <h2>
-                پروژه‌ای موجود نیست
+                {{ t.NO_PROJECTS_TITLE }}
             </h2>
 
             <p>
-                هنوز پروژه‌ای برای نمایش ثبت نشده است.
+                {{ t.NO_PROJECTS_BODY }}
             </p>
 
         </div>
