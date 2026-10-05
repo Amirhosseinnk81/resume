@@ -114,6 +114,10 @@ class BaseConfig:
 
     RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
 
+    # Seed an empty database from data/*.json on boot. Without this a
+    # fresh host serves a site with no projects and no articles.
+    AUTO_SEED = _env_bool("AUTO_SEED", True)
+
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
@@ -138,6 +142,8 @@ class TestingConfig(BaseConfig):
     SECRET_KEY = "testing-secret-key"
     SITE_URL = "https://example.test"
     RATELIMIT_ENABLED = False
+    # Tests seed explicitly, so the shape under test is always obvious.
+    AUTO_SEED = False
     ADMIN_USERNAME = "testadmin"
     # werkzeug hash of "testpass", generated at import time so no secret is
     # committed and the test credential can never work in production.

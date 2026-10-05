@@ -62,6 +62,7 @@ from repositories.settings_repository import (  # noqa: E402
     get_settings,
     get_skills_by_category,
 )
+from seed import seed_if_empty  # noqa: E402
 from seo import (  # noqa: E402
     article_schema,
     breadcrumb_schema,
@@ -119,6 +120,14 @@ def _prepare_database(app):
         # against data you cannot afford to rebuild.
         try:
             db.create_all()
+
+            # create_all only makes empty tables, so the first deploy served
+            # a site with no projects and no articles. The JSON files in
+            # data/ ship with every deploy and are the initial content.
+            # Controlled by AUTO_SEED=0 for a host that manages its own data.
+            if app.config.get("AUTO_SEED", True):
+                seed_if_empty(app.logger)
+
         except OperationalError as error:
             target = db_path or uri
             raise RuntimeError(
