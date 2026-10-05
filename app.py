@@ -28,6 +28,7 @@ from flask import (
 )
 from flask_mail import Message
 from flask_wtf.csrf import CSRFError
+from sqlalchemy.exc import OperationalError
 
 # Load .env before any config class reads an environment variable.
 load_dotenv()
@@ -35,7 +36,7 @@ load_dotenv()
 from admin import admin_bp  # noqa: E402
 from admin.forms import ContactForm  # noqa: E402
 from admin.utils import article_upload_exists  # noqa: E402
-from config import get_config  # noqa: E402
+from config import get_config, sqlite_path  # noqa: E402
 from content import (  # noqa: E402
     BUILT_WITH,
     DEFAULT_LANG,
@@ -84,13 +85,49 @@ def create_app(config_name=None):
 
     app.register_blueprint(admin_bp)
 
-    with app.app_context():
-        # create_all is enough for a single-file SQLite schema of this size.
-        # Introduce Alembic/Flask-Migrate once the schema starts changing
-        # against data you cannot afford to rebuild.
-        db.create_all()
+    _prepare_database(app)
 
     return app
+
+
+def _prepare_database(app):
+    """
+    Create the schema, making sure a SQLite file has a directory to live in.
+
+    SQLite does not create missing directories; it reports "unable to open
+    database file", which on a fresh host looks like a permissions problem
+    rather than a missing folder. Creating it here means the app boots on a
+    host where `data/` was not part of the deployed bundle.
+    """
+    uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+    db_path = sqlite_path(uri)
+
+    if db_path:
+        directory = os.path.dirname(os.path.abspath(db_path))
+        try:
+            os.makedirs(directory, exist_ok=True)
+        except OSError as error:
+            raise RuntimeError(
+                f"Cannot create the database directory {directory!r}: {error}. "
+                "Set DATABASE_URL to a writable location (or a managed "
+                "Postgres URL), or mount a writable disk there."
+            ) from error
+
+    with app.app_context():
+        # create_all is enough for a single-file schema of this size.
+        # Introduce Alembic/Flask-Migrate once the schema starts changing
+        # against data you cannot afford to rebuild.
+        try:
+            db.create_all()
+        except OperationalError as error:
+            target = db_path or uri
+            raise RuntimeError(
+                f"Cannot open the database at {target!r}: {error.orig}. "
+                "On a container host the application directory is often "
+                "read-only or wiped between deploys — set DATABASE_URL to a "
+                "managed Postgres database, or mount a persistent disk and "
+                "point DATABASE_URL at a file on it."
+            ) from error
 
 
 # --- Wiring -----------------------------------------------------------

@@ -19,6 +19,46 @@ def _env_bool(name, default=False):
     return raw.strip().lower() in ("1", "true", "yes", "on")
 
 
+def _normalise_db_url(url):
+    """
+    Accept the URL shapes hosting providers hand out.
+
+    Managed Postgres add-ons (Liara, Heroku, Render) still publish
+    `postgres://`, which SQLAlchemy 2.x no longer recognises, and they do not
+    name a driver. Rewriting here means DATABASE_URL can be pasted from the
+    provider's panel unchanged.
+    """
+    if not url:
+        return url
+
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://") :]
+
+    if url.startswith("postgresql://"):
+        url = "postgresql+psycopg://" + url[len("postgresql://") :]
+
+    return url
+
+
+def sqlite_path(database_uri):
+    """
+    Filesystem path behind a sqlite:// URI, or None for any other backend.
+
+    Used to create the parent directory before SQLAlchemy opens the file —
+    SQLite will not create missing directories and reports the far less
+    obvious "unable to open database file" instead.
+    """
+    if not database_uri or not database_uri.startswith("sqlite:"):
+        return None
+
+    path = database_uri.split("sqlite:///", 1)[-1]
+
+    if not path or path == ":memory:" or path.startswith(":memory:"):
+        return None
+
+    return path
+
+
 class BaseConfig:
 
     # --- Core ---------------------------------------------------------
@@ -32,11 +72,16 @@ class BaseConfig:
     # --- Database -----------------------------------------------------
     # Defaults to SQLite next to the project; set DATABASE_URL to move to
     # PostgreSQL without touching any code.
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL",
-        "sqlite:///" + os.path.join(BASE_DIR, "data", "resume.db"),
+    SQLALCHEMY_DATABASE_URI = _normalise_db_url(
+        os.getenv("DATABASE_URL")
+        or "sqlite:///" + os.path.join(BASE_DIR, "data", "resume.db")
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Recycle pooled connections before a managed database drops them, and
+    # check liveness on checkout. Without this, a container that has been
+    # idle overnight serves its first request a dead connection.
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "pool_recycle": 280}
 
     # --- Uploads ------------------------------------------------------
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads", "articles")

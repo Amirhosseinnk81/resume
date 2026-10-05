@@ -12,6 +12,11 @@ itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.2
 pillow==11.3.0
+# Lets DATABASE_URL point at a managed Postgres without a rebuild.
+# Left as a range, not a pin: the binary wheel must exist for whatever
+# Python the host runs (3.10 on Liara, 3.14 locally), and an exact pin
+# fails on whichever of those the chosen build does not cover.
+psycopg[binary]>=3.1,<4
 python-dotenv==1.2.2
 reportlab==4.4.4
 SQLAlchemy==2.0.43
