@@ -8,6 +8,7 @@ security boundary.
 """
 
 import os
+import posixpath
 import re
 import unicodedata
 import uuid
@@ -33,7 +34,12 @@ def safe_upload_filename(filename, upload_folder):
     Werkzeug's secure_filename() strips non-ASCII, which would mangle the
     Persian filenames this project actually uses. Instead:
 
-      1. Strip directory components to block traversal ("../../etc/passwd").
+      1. Treat both "/" and "\\" as separators before taking the basename.
+         os.path.basename is platform-dependent: on Linux a backslash is an
+         ordinary filename character, so a Windows-style path uploaded to a
+         Linux server kept its ".." segments ("..\\..\\etc\\passwd" became
+         "....etcpasswd"). Normalising first makes the result identical on
+         both platforms.
       2. Normalise Unicode (NFC) so visually identical Persian names don't
          produce two different files.
       3. Remove characters that are illegal in Windows filenames or that
@@ -42,7 +48,10 @@ def safe_upload_filename(filename, upload_folder):
          another article's file when two share a name.
       5. Re-check the resolved path still lands inside upload_folder.
     """
-    base_name = os.path.basename(filename or "").strip()
+    # Normalise Windows separators first so basename() behaves the same on
+    # every platform, then take the final segment.
+    raw = (filename or "").replace("\\", "/")
+    base_name = posixpath.basename(raw).strip()
     base_name = unicodedata.normalize("NFC", base_name)
 
     # Reject anything that is only dots, or empty after stripping.
