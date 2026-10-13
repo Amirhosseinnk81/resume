@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.10 is the floor: it is what the production host (Liara) runs.
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run tests
+        env:
+          APP_ENV: testing
+          SECRET_KEY: ci-secret-key
+        run: pytest --cov=. --cov-report=term-missing
+
+      - name: Verify the production WSGI entry point imports
+        env:
+          SECRET_KEY: ci-secret-key
+          APP_ENV: production
+        run: python -c "import wsgi; print('wsgi:app ok')"
+
+      - name: Verify the JSON migration script is importable
+        run: python -c "import scripts.migrate_json_to_db as m; print('migration ok')"
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install linters
+        run: pip install ruff vermin
+
+      - name: Ruff
+        run: ruff check . --output-format=github
+
+      # Guards the deployment floor. ruff's pyupgrade rules once rewrote
+      # `timezone.utc` into `datetime.UTC` because ruff.toml targeted py311,
+      # which booted fine in CI and then crashed the 3.10 production host.
+      # vermin reads the actual APIs used, not just syntax. The trailing
+      # dash in 3.10- means "3.10 or older"; plain 3.10 means "exactly
+      # 3.10" and fails on code that would also run on 3.7.
+      - name: Verify the code still runs on Python 3.10
+        run: |
+          vermin --no-tips --target=3.10- --violations app.py models.py seo.py seed.py config.py content.py extensions.py wsgi.py admin/ repositories/ scripts/
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit dependencies for known CVEs
+        run: pip-audit -r requirements.txt --strict
+        continue-on-error: true
+
+      - name: Fail if a .env file is committed
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "::error::.env is tracked by git — it must never be committed."
+            exit 1
+          fi
+          echo "No tracked .env. Good."

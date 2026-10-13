@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{#
+  Shared layout for the 404/429/500 pages. Before this the app had no error
+  templates at all: a missing project returned the bare string
+  "Project not found", and an unhandled exception showed Flask's default
+  white page with no navigation back into the site.
+#}
+
+{% block content %}
+<section class="error-page text-center">
+
+    <p class="error-code">{% block error_code %}{% endblock %}</p>
+
+    <h1 class="error-title">{% block error_title %}{% endblock %}</h1>
+
+    <p class="error-body">{% block error_body %}{% endblock %}</p>
+
+    <div class="error-actions">
+
+        <a href="{{ url_for('home') }}" class="btn btn-primary">
+            <i class="fa-solid fa-house"></i>
+            <span>{{ t.ERR_HOME }}</span>
+        </a>
+
+        <a href="{{ url_for('projects') }}" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-code"></i>
+            <span>{{ t.MENU_PROJECTS }}</span>
+        </a>
+
+    </div>
+
+</section>
+{% endblock %}
