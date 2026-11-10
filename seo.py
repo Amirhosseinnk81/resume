@@ -12,6 +12,7 @@ from xml.sax.saxutils import escape
 
 from flask import current_app, url_for
 
+from admin.utils import article_image_url
 from content import EDUCATION, EXPERIENCES, NAME, PROFILE, TAGLINE
 
 
@@ -113,10 +114,9 @@ def article_schema(article):
     }
     if published:
         schema["datePublished"] = str(published)
-    if article.get("image"):
-        schema["image"] = absolute(
-            url_for("static", filename=f"images/{article['image']}")
-        )
+    image_url = article_image_url(article.get("image"))
+    if image_url:
+        schema["image"] = absolute(image_url)
     return schema
 
 

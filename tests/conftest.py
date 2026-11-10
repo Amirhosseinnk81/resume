@@ -30,6 +30,7 @@ def app(tmp_path):
     application.config.update(
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{tmp_path / 'test.db'}",
         UPLOAD_FOLDER=str(tmp_path / "uploads"),
+        ARTICLE_IMAGE_FOLDER=str(tmp_path / "images"),
         ADMIN_USERNAME=ADMIN_USERNAME,
         ADMIN_PASSWORD_HASH=generate_password_hash(ADMIN_PASSWORD),
     )

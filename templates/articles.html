@@ -26,8 +26,8 @@
                   now — the template referenced one that did not exist, so
                   every article without a cover showed a broken image.
                 #}
-                <img src="{{ url_for('static', filename='images/' ~ article.image) if article.image
-                             else url_for('static', filename='images/default.png') }}"
+                <img src="{{ article_image_url(article.image)
+                             or url_for('static', filename='images/default.png') }}"
                     class="card-img-top" alt="{{ article | loc('title') }}"
                     width="800" height="450" loading="lazy" decoding="async">
 

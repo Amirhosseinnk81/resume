@@ -56,7 +56,7 @@
 {% endmacro %}
 
 
-{% macro file_field(f, help="", current="") %}
+{% macro file_field(f, help="", current="", accept=".pdf") %}
 <div class="mb-3">
 
   <label for="{{ f.id }}" class="form-label">
@@ -64,7 +64,7 @@
     {% if f.flags.required %}<span class="text-danger">*</span>{% endif %}
   </label>
 
-  {{ f(class="form-control" ~ (" is-invalid" if f.errors else ""), accept=".pdf") }}
+  {{ f(class="form-control" ~ (" is-invalid" if f.errors else ""), accept=accept) }}
 
   {% if f.errors %}
   <div class="invalid-feedback d-block">

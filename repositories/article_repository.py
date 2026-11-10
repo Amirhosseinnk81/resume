@@ -129,26 +129,31 @@ def import_articles(rows, mode="merge"):
     """
     Does not commit — see repositories/_backup.py.
 
-    Returns the stored filenames that are no longer referenced, so the
-    caller can delete those PDFs once the transaction has committed.
+    Returns {"file": [...], "image": [...]}: the stored PDF and cover names
+    that are no longer referenced, so the caller can delete them once the
+    transaction has committed.
     """
-    stale_files = []
+    stale = {"file": [], "image": []}
 
     if mode == "replace":
-        stale_files = [row.file for row in Article.query.all() if row.file]
+        for row in Article.query.all():
+            for column, names in stale.items():
+                if getattr(row, column):
+                    names.append(getattr(row, column))
         Article.query.delete()
 
     for item in rows:
         row = get_or_new(Article, item, mode)
-        previous_file = row.file
+        previous = {column: getattr(row, column) for column in stale}
 
         _apply(row, item)
         if row.views is None:
             row.views = 0
         restore_timestamps(row, item)
 
-        if previous_file and previous_file != row.file:
-            stale_files.append(previous_file)
+        for column, name in previous.items():
+            if name and name != getattr(row, column):
+                stale[column].append(name)
 
     db.session.flush()
-    return stale_files
+    return stale

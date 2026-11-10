@@ -80,12 +80,21 @@ def populated(app, db):
 
 
 def export(app, resume_path, **kwargs):
-    return backup_service.build_export(app.config["UPLOAD_FOLDER"], resume_path, **kwargs)
+    return backup_service.build_export(
+        app.config["UPLOAD_FOLDER"],
+        resume_path,
+        image_folder=app.config["ARTICLE_IMAGE_FOLDER"],
+        **kwargs,
+    )
 
 
 def restore(app, resume_path, payload, **kwargs):
     return backup_service.import_backup(
-        io.BytesIO(payload), app.config["UPLOAD_FOLDER"], resume_path, **kwargs
+        io.BytesIO(payload),
+        app.config["UPLOAD_FOLDER"],
+        resume_path,
+        image_folder=app.config["ARTICLE_IMAGE_FOLDER"],
+        **kwargs,
     )
 
 

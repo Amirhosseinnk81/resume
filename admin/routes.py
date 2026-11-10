@@ -63,7 +63,12 @@ from .forms import (
     ProjectForm,
     SettingsForm,
 )
-from .utils import delete_article_upload, save_article_upload
+from .utils import (
+    article_image_url,
+    delete_article_upload,
+    save_article_image,
+    save_article_upload,
+)
 
 
 def _is_safe_next(target):
@@ -228,6 +233,33 @@ def articles():
     )
 
 
+def _save_article_files(form):
+    """
+    Store the uploaded PDF and cover image.
+
+    Returns (pdf_name, image_name), each None when that file was not
+    uploaded, or None after recording the error on the form. A failure
+    leaves nothing new on disk.
+    """
+    upload_folder = current_app.config["UPLOAD_FOLDER"]
+    image_folder = current_app.config["ARTICLE_IMAGE_FOLDER"]
+
+    try:
+        image_name = save_article_image(form.image_file.data, image_folder)
+    except ValueError as error:
+        form.image_file.errors.append(str(error))
+        return None
+
+    try:
+        pdf_name = save_article_upload(form.file.data, upload_folder)
+    except ValueError as error:
+        delete_article_upload(image_name, image_folder)
+        form.file.errors.append(str(error))
+        return None
+
+    return pdf_name, image_name
+
+
 @admin_bp.route("/articles/create", methods=["GET", "POST"])
 @login_required
 def create_article_view():
@@ -236,15 +268,14 @@ def create_article_view():
 
     if form.validate_on_submit():
 
-        try:
-            stored_name = save_article_upload(
-                form.file.data, current_app.config["UPLOAD_FOLDER"]
-            )
-        except ValueError as error:
-            form.file.errors.append(str(error))
-        else:
+        saved = _save_article_files(form)
+
+        if saved is not None:
+            pdf_name, image_name = saved
+
             data = form.to_dict()
-            data["file"] = stored_name
+            data["file"] = pdf_name
+            data["image"] = image_name or ""
             if not data["authors"]:
                 data["authors"] = (current_user() or {}).get("username", "")
 
@@ -276,21 +307,33 @@ def edit_article(article_id):
 
     if form.validate_on_submit():
 
-        data = form.to_dict()
-        upload_folder = current_app.config["UPLOAD_FOLDER"]
+        saved = _save_article_files(form)
 
-        try:
-            stored_name = save_article_upload(form.file.data, upload_folder)
-        except ValueError as error:
-            form.file.errors.append(str(error))
-        else:
-            if stored_name:
+        if saved is not None:
+            pdf_name, image_name = saved
+
+            data = form.to_dict()
+            upload_folder = current_app.config["UPLOAD_FOLDER"]
+            image_folder = current_app.config["ARTICLE_IMAGE_FOLDER"]
+
+            if pdf_name:
                 # Replacing the PDF used to leave the previous one on disk
                 # forever.
                 delete_article_upload(article.get("file"), upload_folder)
-                data["file"] = stored_name
+                data["file"] = pdf_name
             else:
                 data["file"] = article.get("file", "")
+
+            # delete_article_upload only ever touches the uploads folder, so
+            # an older cover committed under static/images is never removed.
+            if image_name:
+                delete_article_upload(article.get("image"), image_folder)
+                data["image"] = image_name
+            elif form.remove_image.data:
+                delete_article_upload(article.get("image"), image_folder)
+                data["image"] = ""
+            else:
+                data["image"] = article.get("image", "")
 
             update_article(article_id, data)
             flash("مقاله با موفقیت ویرایش شد.", "success")
@@ -301,6 +344,7 @@ def edit_article(article_id):
         page_title="Edit Article",
         form=form,
         article=article,
+        cover_url=article_image_url(article.get("image")),
         edit_mode=True,
     )
 
@@ -314,9 +358,12 @@ def delete_article_view(article_id):
     if deleted is None:
         flash("مقاله مورد نظر پیدا نشد.", "danger")
     else:
-        # Remove the orphaned PDF too, which the old route never did.
+        # Remove the orphaned PDF and cover too, which the old route never did.
         delete_article_upload(
             deleted.get("file"), current_app.config["UPLOAD_FOLDER"]
+        )
+        delete_article_upload(
+            deleted.get("image"), current_app.config["ARTICLE_IMAGE_FOLDER"]
         )
         flash("مقاله حذف شد.", "success")
 
@@ -444,6 +491,7 @@ def backup_export():
         current_app.config["UPLOAD_FOLDER"],
         _resume_path(),
         include_messages=form.include_messages.data,
+        image_folder=current_app.config["ARTICLE_IMAGE_FOLDER"],
     )
 
     return send_file(
@@ -471,6 +519,7 @@ def backup_import():
             _resume_path(),
             mode=form.mode.data,
             tables=form.tables.data,
+            image_folder=current_app.config["ARTICLE_IMAGE_FOLDER"],
         )
     except backup_service.BackupError as error:
         flash(str(error), "danger")

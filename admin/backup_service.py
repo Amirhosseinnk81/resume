@@ -7,7 +7,10 @@ everything the admin can edit, and restores it again:
 
     data.json                    the tables, as plain JSON
     uploads/articles/<name>.pdf  the PDF of every article that has one
+    uploads/images/<name>        every cover image uploaded from the admin
     myresume.pdf                 the resume served at /resume
+
+Covers committed under static/images travel with the code, not the archive.
 
 Nothing from the app config is ever written to the archive — only rows the
 repositories return.
@@ -33,13 +36,21 @@ from repositories.pageview_repository import export_pageviews, import_pageviews
 from repositories.project_repository import export_projects, import_projects
 from repositories.settings_repository import export_settings, import_settings
 
-from .utils import allowed_article_file, delete_article_upload, safe_upload_filename
+from .utils import (
+    allowed_article_file,
+    allowed_image_file,
+    article_upload_exists,
+    delete_article_upload,
+    safe_upload_filename,
+    store_image_bytes,
+)
 
 SCHEMA_VERSION = 1
 
 DATA_FILE = "data.json"
 RESUME_FILE = "myresume.pdf"
 ARTICLES_DIR = "uploads/articles"
+IMAGES_DIR = "uploads/images"
 
 TABLES = ("projects", "articles", "settings", "pageviews", "messages")
 
@@ -60,7 +71,7 @@ class BackupError(ValueError):
 # --- Export -----------------------------------------------------------
 
 
-def build_export(upload_folder, resume_path, include_messages=False):
+def build_export(upload_folder, resume_path, include_messages=False, *, image_folder):
     """Return the backup archive as bytes."""
     articles = export_articles()
 
@@ -90,6 +101,12 @@ def build_export(upload_folder, resume_path, include_messages=False):
             if path and allowed_article_file(name) and os.path.isfile(path):
                 archive.write(path, f"{ARTICLES_DIR}/{name}")
 
+        # Only covers that were uploaded; ones under static/images are part
+        # of the code and come back with every deploy anyway.
+        for name in sorted({item["image"] for item in articles if item["image"]}):
+            if allowed_image_file(name) and article_upload_exists(name, image_folder):
+                archive.write(os.path.join(image_folder, name), f"{IMAGES_DIR}/{name}")
+
         if os.path.isfile(resume_path):
             archive.write(resume_path, RESUME_FILE)
 
@@ -103,7 +120,9 @@ def export_filename():
 # --- Import -----------------------------------------------------------
 
 
-def import_backup(stream, upload_folder, resume_path, mode="merge", tables=TABLES):
+def import_backup(
+    stream, upload_folder, resume_path, mode="merge", tables=TABLES, *, image_folder
+):
     """
     Restore an archive produced by build_export().
 
@@ -123,7 +142,9 @@ def import_backup(stream, upload_folder, resume_path, mode="merge", tables=TABLE
         raise BackupError("فایل انتخاب‌شده یک ZIP معتبر نیست.") from error
 
     with archive:
-        pdf_members, resume_member = _validate_members(archive, upload_folder)
+        pdf_members, image_members, resume_member = _validate_members(
+            archive, upload_folder, image_folder
+        )
         data = _load_data(archive)
         _validate_data(data)
 
@@ -132,16 +153,20 @@ def import_backup(stream, upload_folder, resume_path, mode="merge", tables=TABLE
 
         try:
             counts = {}
-            stale_files = []
+            stale = {"file": [], "image": []}
 
             if "projects" in tables:
                 counts["projects"] = import_projects(data.get("projects", []), mode)
 
             if "articles" in tables:
                 rows = _restore_article_files(
-                    archive, data.get("articles", []), pdf_members, upload_folder, written
+                    archive,
+                    data.get("articles", []),
+                    (pdf_members, upload_folder),
+                    (image_members, image_folder),
+                    written,
                 )
-                stale_files = import_articles(rows, mode)
+                stale = import_articles(rows, mode)
                 counts["articles"] = len(rows)
 
             if "settings" in tables:
@@ -177,20 +202,27 @@ def import_backup(stream, upload_folder, resume_path, mode="merge", tables=TABLE
     if resume_tmp:
         os.replace(resume_tmp, resume_path)
 
+    # delete_article_upload stays inside the folder it is given, so a cover
+    # committed under static/images is never touched.
     kept = {os.path.basename(path) for path in written}
-    for name in stale_files:
-        if name not in kept:
-            delete_article_upload(name, upload_folder)
+    for column, folder in (("file", upload_folder), ("image", image_folder)):
+        for name in stale[column]:
+            if name not in kept:
+                delete_article_upload(name, folder)
 
     return counts
 
 
-def _restore_article_files(archive, articles, pdf_members, upload_folder, written):
+def _restore_article_files(archive, articles, pdfs, images, written):
     """
-    Write each article's PDF under a freshly sanitised name and point the
-    row at it. Appends every path written to `written` as it goes, so the
-    caller can undo them.
+    Write each article's PDF and uploaded cover under freshly sanitised
+    names and point the row at them. `pdfs` and `images` are
+    (members by name, destination folder). Appends every path written to
+    `written` as it goes, so the caller can undo them.
     """
+    pdf_members, upload_folder = pdfs
+    image_members, image_folder = images
+
     os.makedirs(upload_folder, exist_ok=True)
 
     rows = []
@@ -210,6 +242,22 @@ def _restore_article_files(archive, articles, pdf_members, upload_folder, writte
             _extract(archive, member, target)
             row["file"] = stored_name
 
+        # With no cover in the archive the name is kept as it is: it may
+        # well be one committed under static/images.
+        image_member = image_members.get(row.get("image") or "")
+
+        if image_member is not None:
+            try:
+                stored_name = store_image_bytes(
+                    _read(archive, image_member),
+                    _UPLOAD_PREFIX.sub("", row["image"]),
+                    image_folder,
+                )
+            except ValueError as error:
+                raise BackupError("یکی از تصویرهای داخل ZIP معتبر نیست.") from error
+            written.append(os.path.join(image_folder, stored_name))
+            row["image"] = stored_name
+
         rows.append(row)
 
     return rows
@@ -227,11 +275,11 @@ def _contained_path(folder, name):
     return target
 
 
-def _validate_members(archive, upload_folder):
+def _validate_members(archive, upload_folder, image_folder):
     """
     Check every entry before anything is extracted.
 
-    Returns ({stored filename: ZipInfo}, resume ZipInfo or None).
+    Returns ({pdf name: ZipInfo}, {image name: ZipInfo}, resume ZipInfo or None).
     """
     members = [info for info in archive.infolist() if not info.is_dir()]
 
@@ -242,6 +290,7 @@ def _validate_members(archive, upload_folder):
         raise BackupError("حجم محتوای ZIP بیش از حد مجاز (۵۰ مگابایت) است.")
 
     pdf_members = {}
+    image_members = {}
     resume_member = None
     has_data = False
 
@@ -267,13 +316,20 @@ def _validate_members(archive, upload_folder):
             if _contained_path(upload_folder, base_name) is None:
                 raise BackupError("ZIP شامل مسیر غیرمجاز است.")
             pdf_members[base_name] = info
+        elif posixpath.dirname(name) == IMAGES_DIR and allowed_image_file(name):
+            base_name = posixpath.basename(name)
+            if _contained_path(image_folder, base_name) is None:
+                raise BackupError("ZIP شامل مسیر غیرمجاز است.")
+            image_members[base_name] = info
         else:
-            raise BackupError("ZIP شامل فایل غیرمجاز است؛ فقط data.json و PDF پذیرفته می‌شود.")
+            raise BackupError(
+                "ZIP شامل فایل غیرمجاز است؛ فقط data.json، PDF و تصویر پذیرفته می‌شود."
+            )
 
     if not has_data:
         raise BackupError("فایل data.json در ZIP پیدا نشد.")
 
-    return pdf_members, resume_member
+    return pdf_members, image_members, resume_member
 
 
 def _read(archive, info):
@@ -354,6 +410,7 @@ def _validate_data(data):
 
     for article in _validate_rows(data, "articles", ("title",)):
         _require(isinstance(article.get("file", ""), str), "نام فایل مقاله نامعتبر است.")
+        _require(isinstance(article.get("image", ""), str), "نام تصویر مقاله نامعتبر است.")
         views = article.get("views", 0)
         _require(_is_int(views) and views >= 0, "تعداد بازدید مقاله نامعتبر است.")
 

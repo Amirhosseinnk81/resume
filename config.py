@@ -85,6 +85,9 @@ class BaseConfig:
 
     # --- Uploads ------------------------------------------------------
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads", "articles")
+    # Article cover images uploaded from the admin. Older covers are
+    # committed under static/images and keep working from there.
+    ARTICLE_IMAGE_FOLDER = os.path.join(BASE_DIR, "uploads", "images")
     MAX_CONTENT_LENGTH = 20 * 1024 * 1024  # 20 MB
 
     # --- Mail ---------------------------------------------------------

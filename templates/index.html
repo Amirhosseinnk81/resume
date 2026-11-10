@@ -454,12 +454,11 @@
 
                 <div class="article-card-image">
 
-                    {% if article.image %}
+                    {% set cover_url = article_image_url(article.image) %}
 
-                    <img src="{{ url_for(
-                            'static',
-                            filename='images/' ~ article.image
-                        ) }}" alt="{{ article | loc('title') }}" loading="lazy">
+                    {% if cover_url %}
+
+                    <img src="{{ cover_url }}" alt="{{ article | loc('title') }}" loading="lazy">
 
                     {% else %}
 

@@ -273,6 +273,15 @@ body{
 
 }
 
+/* ---------- Forms ---------- */
+
+.article-cover-preview{
+
+    max-height:180px;
+    object-fit:cover;
+
+}
+
 /* ---------- Dashboard ---------- */
 
 /* Tall enough for a tile with a note, so tiles match when they stack. */

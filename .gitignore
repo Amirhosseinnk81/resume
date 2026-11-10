@@ -11,6 +11,7 @@ venv/
 # Uploaded user content (keep the folder, not its contents)
 uploads/articles/*
 !uploads/articles/.gitkeep
+uploads/images/*
 
 # OS / editor
 .DS_Store

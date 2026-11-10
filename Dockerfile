@@ -35,7 +35,7 @@ COPY --chown=appuser:appuser . .
 
 # SQLite file and uploads must be writable, and should be mounted as volumes
 # so they survive a container rebuild.
-RUN mkdir -p /app/data /app/uploads/articles \
+RUN mkdir -p /app/data /app/uploads/articles /app/uploads/images \
  && chown -R appuser:appuser /app/data /app/uploads
 
 USER appuser

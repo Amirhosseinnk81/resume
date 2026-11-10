@@ -52,9 +52,24 @@
             {{ field(form.year, placeholder="2025") }}
             {{ select(form.language) }}
 
-            {{ field(form.image,
-                     placeholder="article-cover.jpg",
-                     help="نام فایل داخل static/images. خالی بماند تصویر پیش‌فرض نمایش داده می‌شود.") }}
+            {% if cover_url %}
+            <img src="{{ cover_url }}" alt="تصویر فعلی مقاله"
+                 class="img-fluid rounded border mb-2 article-cover-preview">
+            {% endif %}
+
+            {{ file_field(form.image_file,
+                          accept="image/jpeg,image/png,image/webp,image/gif",
+                          help="JPG، PNG، WebP یا GIF، حداکثر ۵ مگابایت. بدون تصویر، تصویر پیش‌فرض نمایش داده می‌شود.",
+                          current=article.image if edit_mode and article else "") }}
+
+            {% if edit_mode and article and article.image %}
+            <div class="form-check mb-3">
+              {{ form.remove_image(class="form-check-input") }}
+              <label class="form-check-label" for="{{ form.remove_image.id }}">
+                {{ form.remove_image.label.text }}
+              </label>
+            </div>
+            {% endif %}
 
             {{ file_field(form.file,
                           help="حداکثر ۲۰ مگابایت.",

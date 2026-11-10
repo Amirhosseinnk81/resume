@@ -182,7 +182,18 @@ class ArticleForm(FlaskForm):
         ],
     )
     language = SelectField("زبان", choices=LANGUAGES, default="fa")
-    image = StringField("نام فایل تصویر", validators=[Optional(), Length(max=300)])
+
+    image_file = FileField(
+        "تصویر جلد",
+        validators=[
+            Optional(),
+            FileAllowed(
+                ["jpg", "jpeg", "png", "webp", "gif"],
+                "فقط تصویر JPG، PNG، WebP یا GIF مجاز است.",
+            ),
+        ],
+    )
+    remove_image = BooleanField("حذف تصویر فعلی")
 
     file = FileField(
         "فایل PDF",
@@ -209,7 +220,6 @@ class ArticleForm(FlaskForm):
             "authors_en": (self.authors_en.data or "").strip(),
             "year": self.year.data,
             "language": self.language.data,
-            "image": (self.image.data or "").strip(),
         }
 
 

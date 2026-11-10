@@ -35,7 +35,7 @@ load_dotenv()
 
 from admin import admin_bp  # noqa: E402
 from admin.forms import ContactForm  # noqa: E402
-from admin.utils import article_upload_exists  # noqa: E402
+from admin.utils import article_image_url, article_upload_exists  # noqa: E402
 from config import get_config, sqlite_path  # noqa: E402
 from content import (  # noqa: E402
     BUILT_WITH,
@@ -153,6 +153,7 @@ def _init_extensions(app):
 
 def _register_jinja(app):
     app.jinja_env.filters["skill_icon"] = get_skill_icon
+    app.jinja_env.globals["article_image_url"] = article_image_url
 
     @app.template_filter("thousands")
     def thousands(value):
@@ -409,6 +410,25 @@ def _register_routes(app):
             abort(404)
 
         return send_from_directory(upload_folder, filename, as_attachment=True)
+
+    @app.route("/articles/images/<path:filename>")
+    def article_image(filename):
+        """
+        Serves a cover image uploaded from the admin. Like download_article,
+        only names an article actually references are served.
+        """
+        known = {
+            article["image"]
+            for article in get_articles()
+            if article.get("image")
+        }
+
+        image_folder = current_app.config["ARTICLE_IMAGE_FOLDER"]
+
+        if filename not in known or not article_upload_exists(filename, image_folder):
+            abort(404)
+
+        return send_from_directory(image_folder, filename)
 
     @app.route("/contact", methods=["GET", "POST"])
     @limiter.limit("5 per hour", methods=["POST"])

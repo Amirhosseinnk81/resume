@@ -7,13 +7,26 @@ filename sanitiser be unit-tested directly, which matters because it is a
 security boundary.
 """
 
+import io
 import os
 import posixpath
 import re
 import unicodedata
 import uuid
 
+from flask import current_app, url_for
+from PIL import Image
+
 ALLOWED_ARTICLE_EXTENSIONS = {"pdf"}
+
+ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
+
+# The stored extension comes from what Pillow finds in the file, never from
+# the uploaded name, so "cover.png" holding HTML cannot be served as HTML.
+# SVG is deliberately absent: it can carry script.
+_IMAGE_FORMATS = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp", "GIF": ".gif"}
+
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
 # Characters that are unsafe in a filename on Windows or in a URL path.
 _UNSAFE = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
@@ -24,6 +37,13 @@ def allowed_article_file(filename):
     return (
         "." in (filename or "")
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_ARTICLE_EXTENSIONS
+    )
+
+
+def allowed_image_file(filename):
+    return (
+        "." in (filename or "")
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
     )
 
 
@@ -137,3 +157,84 @@ def article_upload_exists(filename, upload_folder):
     if not target.startswith(os.path.abspath(upload_folder) + os.sep):
         return False
     return os.path.isfile(target)
+
+
+# --- Article cover images ---------------------------------------------
+
+
+def image_extension(payload):
+    """
+    Return the extension for an image's real format, or raise ValueError
+    when the bytes are not a JPEG, PNG, WebP or GIF.
+    """
+    try:
+        with Image.open(io.BytesIO(payload)) as image:
+            image_format = image.format
+            image.verify()
+    except (OSError, SyntaxError, ValueError, Image.DecompressionBombError) as error:
+        raise ValueError("فایل انتخاب‌شده یک تصویر معتبر نیست.") from error
+
+    extension = _IMAGE_FORMATS.get(image_format)
+    if extension is None:
+        raise ValueError("فقط تصویر JPG، PNG، WebP یا GIF مجاز است.")
+
+    return extension
+
+
+def store_image_bytes(payload, original_name, image_folder):
+    """Validate image bytes and write them under a sanitised name."""
+    extension = image_extension(payload)
+
+    os.makedirs(image_folder, exist_ok=True)
+
+    root = os.path.splitext(original_name or "")[0] or "cover"
+    stored_name = safe_upload_filename(root + extension, image_folder)
+
+    with open(os.path.join(image_folder, stored_name), "wb") as handle:
+        handle.write(payload)
+
+    return stored_name
+
+
+def save_article_image(file_storage, image_folder):
+    """
+    Validate and store an uploaded cover image.
+
+    Returns the stored filename, or None when no file was supplied.
+    Raises ValueError when the file is present but not an acceptable image.
+    """
+    if not file_storage or not hasattr(file_storage, "filename"):
+        return None
+
+    if not file_storage.filename:
+        return None
+
+    if not allowed_image_file(file_storage.filename):
+        raise ValueError("فقط تصویر JPG، PNG، WebP یا GIF مجاز است.")
+
+    payload = file_storage.read(MAX_IMAGE_BYTES + 1)
+    if len(payload) > MAX_IMAGE_BYTES:
+        raise ValueError("حجم تصویر نباید بیشتر از ۵ مگابایت باشد.")
+
+    return store_image_bytes(payload, file_storage.filename, image_folder)
+
+
+def article_image_url(filename):
+    """
+    URL of an article's cover image, or None when there is no usable file.
+
+    Covers uploaded from the admin live in ARTICLE_IMAGE_FOLDER; older ones
+    are committed under static/images. A name found in neither (an upload
+    lost with a container's disk, say) returns None, so templates show
+    their placeholder instead of a broken image.
+    """
+    if not filename:
+        return None
+
+    if article_upload_exists(filename, current_app.config["ARTICLE_IMAGE_FOLDER"]):
+        return url_for("article_image", filename=filename)
+
+    if article_upload_exists(filename, os.path.join(current_app.static_folder, "images")):
+        return url_for("static", filename=f"images/{filename}")
+
+    return None
