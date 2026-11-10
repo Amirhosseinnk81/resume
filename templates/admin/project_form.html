@@ -1,369 +1,107 @@
 {% extends "admin/base.html" %}
+{% from "admin/_macros.html" import field, select, form_errors %}
 
-{% block title %}
-{{ page_title }}
-{% endblock %}
-
+{% block title %}{{ page_title }} | Admin{% endblock %}
 
 {% block content %}
+<div class="container-fluid py-4">
 
-<div class="container-fluid">
+  <div class="d-flex align-items-center justify-content-between mb-4">
 
-    <!-- Page Header -->
+    <h1 class="h4 mb-0">
+      <i class="bi bi-{{ 'pencil-square' if edit_mode else 'plus-square' }}"></i>
+      {{ 'ویرایش پروژه' if edit_mode else 'افزودن پروژه' }}
+    </h1>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{{ url_for('admin.projects') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
 
-        <div>
+  </div>
 
-            <h3 class="fw-bold mb-1">
-                {{ page_title }}
-            </h3>
+  {{ form_errors(form) }}
 
-            <p class="text-muted mb-0">
+  <form method="post" novalidate>
 
-                {% if edit_mode %}
-                Update your project information.
-                {% else %}
-                Add a new project to your portfolio.
-                {% endif %}
+    {{ form.hidden_tag() }}
 
-            </p>
+    <div class="row g-4">
 
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-body">
+
+            {{ field(form.title, placeholder="مثلاً: Resume Website") }}
+            {{ field(form.description, rows=5) }}
+
+            {# Optional: leave blank and the English site shows the Persian text. #}
+            {{ field(form.title_en, placeholder="Resume Website",
+                     help="اختیاری — برای نمایش در نسخهٔ انگلیسی سایت.") }}
+            {{ field(form.description_en, rows=4,
+                     help="اختیاری — خالی بماند، متن فارسی نمایش داده می‌شود.") }}
+
+            {{ field(form.technologies,
+                     placeholder="Python، Flask، PostgreSQL",
+                     help="با ویرگول جدا کنید.") }}
+
+            {{ field(form.features,
+                     placeholder="پنل مدیریت، احراز هویت، REST API",
+                     help="با ویرگول جدا کنید. اختیاری.") }}
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+
+        <div class="card mb-4">
+          <div class="card-body">
+
+            {{ select(form.status) }}
+            {{ field(form.year, placeholder="2026") }}
+
+            {{ field(form.github, placeholder="https://github.com/...") }}
+            {{ field(form.demo, placeholder="https://...") }}
+
+            {{ field(form.image,
+                     placeholder="profile.jpg",
+                     help="نام فایل داخل static/images") }}
+
+          </div>
         </div>
 
-
-        <a href="{{ url_for('admin.projects') }}" class="btn btn-light">
-
-            <i class="bi bi-arrow-right"></i>
-
-            Back
-
-        </a>
-
-    </div>
-
-
-    <!-- Errors -->
-
-    {% if errors %}
-
-    <div class="alert alert-danger">
-
-        <ul class="mb-0">
-
-            {% for error in errors %}
-
-            <li>
-                {{ error }}
-            </li>
-
-            {% endfor %}
-
-        </ul>
-
-    </div>
-
-    {% endif %}
-
-
-    <!-- Form Card -->
-
-    <div class="card shadow-sm border-0">
-
-        <div class="card-body p-4">
-
-
-            {% if edit_mode %}
-
-            <form method="POST" action="{{ url_for(
-                    'admin.edit_project',
-                    project_id=project.id
-                ) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-
-                {% else %}
-
-                <form method="POST" action="{{ url_for(
-                    'admin.create_project_view'
-                ) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-
-                    {% endif %}
-
-
-                    <!-- =====================================
-                     BASIC INFORMATION
-                ====================================== -->
-
-                    <h5 class="fw-bold mb-4">
-
-                        <i class="bi bi-info-circle me-1"></i>
-
-                        Basic Information
-
-                    </h5>
-
-
-                    <!-- Title -->
-
-                    <div class="mb-4">
-
-                        <label for="title" class="form-label fw-semibold">
-
-                            Project Title
-
-                        </label>
-
-
-                        <input type="text" class="form-control" id="title" name="title"
-                            value="{{ project.get('title', '') }}" placeholder="مثلاً Hotel Management System">
-
-                    </div>
-
-
-                    <!-- Description -->
-
-                    <div class="mb-4">
-
-                        <label for="description" class="form-label fw-semibold">
-
-                            Description
-
-                        </label>
-
-
-                        <textarea class="form-control" id="description" name="description" rows="5"
-                            placeholder="Project description...">{{ project.get('description', '') }}</textarea>
-
-                    </div>
-
-
-                    <!-- =====================================
-                     TECHNOLOGIES
-                ====================================== -->
-
-                    <h5 class="fw-bold mb-4 mt-5">
-
-                        <i class="bi bi-code-slash me-1"></i>
-
-                        Technologies
-
-                    </h5>
-
-
-                    <div class="mb-4">
-
-                        <label for="technologies" class="form-label fw-semibold">
-
-                            Technologies
-
-                        </label>
-
-
-                        <input type="text" class="form-control" id="technologies" name="technologies"
-                            value="{{ project.get('technologies', []) | join(', ') }}"
-                            placeholder="Python, Flask, PostgreSQL">
-
-
-                        <div class="form-text">
-
-                            تکنولوژی‌ها را با کاما جدا کن.
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- =====================================
-                     PROJECT DETAILS
-                ====================================== -->
-
-                    <h5 class="fw-bold mb-4 mt-5">
-
-                        <i class="bi bi-gear me-1"></i>
-
-                        Project Details
-
-                    </h5>
-
-
-                    <div class="row g-3">
-
-
-                        <!-- Status -->
-
-                        <div class="col-md-6">
-
-                            <label for="status" class="form-label fw-semibold">
-
-                                Status
-
-                            </label>
-
-
-                            <select class="form-select" id="status" name="status">
-
-                                <option value="completed" {% if project.get('status')=='completed' %} selected {% endif
-                                    %}>
-                                    Completed
-                                </option>
-
-
-                                <option value="in-progress" {% if project.get('status')=='in-progress' %} selected {%
-                                    endif %}>
-                                    In Progress
-                                </option>
-
-
-                                <option value="planned" {% if project.get('status')=='planned' %} selected {% endif %}>
-                                    Planned
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- Year -->
-
-                        <div class="col-md-6">
-
-                            <label for="year" class="form-label fw-semibold">
-
-                                Year
-
-                            </label>
-
-
-                            <input type="number" class="form-control" id="year" name="year" min="2000" max="2100"
-                                value="{{ project.get('year', '') }}" placeholder="2026">
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- GitHub -->
-
-                    <div class="mb-4 mt-3">
-
-                        <label for="github" class="form-label fw-semibold">
-
-                            GitHub URL
-
-                        </label>
-
-
-                        <input type="url" class="form-control" id="github" name="github"
-                            value="{{ project.get('github', '') }}" placeholder="https://github.com/...">
-
-                    </div>
-
-
-                    <!-- Image -->
-
-                    <div class="mb-4">
-
-                        <label for="image" class="form-label fw-semibold">
-
-                            Image Filename
-
-                        </label>
-
-
-                        <input type="text" class="form-control" id="image" name="image"
-                            value="{{ project.get('image', '') }}" placeholder="project-image.jpg">
-
-
-                        <div class="form-text">
-
-                            نام فایل تصویر موجود در
-                            <code>static/images</code>
-                            را وارد کنید.
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- =====================================
-                     FEATURES
-                ====================================== -->
-
-                    <h5 class="fw-bold mb-4 mt-5">
-
-                        <i class="bi bi-list-check me-1"></i>
-
-                        Project Features
-
-                    </h5>
-
-
-                    <div class="mb-4">
-
-                        <label for="features" class="form-label fw-semibold">
-
-                            Features
-
-                        </label>
-
-
-                        <textarea class="form-control" id="features" name="features" rows="5"
-                            placeholder="Guest management, Admin dashboard, Network monitoring">{{ project.get('features', []) | join(', ') }}</textarea>
-
-
-                        <div class="form-text">
-
-                            قابلیت‌ها را با کاما جدا کن.
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- =====================================
-                     BUTTONS
-                ====================================== -->
-
-                    <div class="d-flex gap-2 mt-5">
-
-
-                        <button type="submit" class="btn btn-primary">
-
-                            {% if edit_mode %}
-
-                            <i class="bi bi-check-lg"></i>
-
-                            Update Project
-
-                            {% else %}
-
-                            <i class="bi bi-plus-lg"></i>
-
-                            Create Project
-
-                            {% endif %}
-
-                        </button>
-
-
-                        <a href="{{ url_for('admin.projects') }}" class="btn btn-light">
-
-                            Cancel
-
-                        </a>
-
-                    </div>
-
-
-                </form>
-
+        {# A concrete number per project, the way the reference portfolios
+           present theirs ("GitHub stars: 8,281"). Optional. #}
+        <div class="card">
+          <div class="card-header py-2">
+            <small class="text-muted">
+              <i class="bi bi-graph-up"></i> سنجه (اختیاری)
+            </small>
+          </div>
+          <div class="card-body">
+
+            {{ field(form.metric_label, placeholder="ستاره‌های گیت‌هاب") }}
+            {{ field(form.metric_value, placeholder="1,240") }}
+
+          </div>
         </div>
 
+      </div>
+
     </div>
+
+    <div class="d-flex gap-2 mt-4">
+
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-check-lg"></i>
+        {{ 'ذخیره تغییرات' if edit_mode else 'افزودن پروژه' }}
+      </button>
+
+      <a href="{{ url_for('admin.projects') }}" class="btn btn-outline-secondary">انصراف</a>
+
+    </div>
+
+  </form>
 
 </div>
-
 {% endblock %}

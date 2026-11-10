@@ -10,10 +10,44 @@ document.addEventListener("DOMContentLoaded", () => {
      THEME
   ===================================================== */
 
+  // Mirrors the pre-paint script in base.html: an explicit saved choice wins,
+  // otherwise follow the OS. Reads are wrapped because localStorage throws in
+  // private mode / when site data is blocked.
+  function readStoredTheme() {
+    try {
+      return localStorage.getItem("theme");
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function storeTheme(theme) {
+    try {
+      localStorage.setItem("theme", theme);
+    } catch (e) {
+      /* non-fatal: the theme still applies for this page view */
+    }
+  }
+
+  const prefersDark =
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+
   const savedTheme =
-    localStorage.getItem("theme") || "light";
+    readStoredTheme() || (prefersDark ? "dark" : "light");
 
   applyTheme(savedTheme);
+
+  // Follow the OS if the visitor has never picked a theme on this site.
+  if (window.matchMedia) {
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (event) => {
+        if (!readStoredTheme()) {
+          applyTheme(event.matches ? "dark" : "light");
+        }
+      });
+  }
 
 
   function applyTheme(theme) {
@@ -87,10 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         applyTheme(nextTheme);
 
-        localStorage.setItem(
-          "theme",
-          nextTheme
-        );
+        storeTheme(nextTheme);
 
       }
     );
@@ -284,5 +315,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
   );
+
+
+  /* =====================================================
+     SCROLL REVEAL  (replaces the AOS library)
+
+     AOS shipped 2.2 KB of CSS + 4.5 KB of JS from a separate CDN origin to
+     do one thing: add a class when an element scrolls into view. This does
+     the same with IntersectionObserver and reads the existing data-aos /
+     data-aos-delay attributes, so no template markup had to change.
+  ===================================================== */
+
+  const revealTargets =
+    document.querySelectorAll("[data-aos]");
+
+  if (revealTargets.length) {
+
+    // Honour the OS "reduce motion" setting: show everything immediately
+    // rather than animating. AOS did not do this.
+    const reduceMotion =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+
+      revealTargets.forEach((el) => el.classList.add("reveal-visible"));
+
+    } else {
+
+      revealTargets.forEach((el) => {
+
+        el.classList.add("reveal");
+
+        const delay = el.getAttribute("data-aos-delay");
+
+        if (delay) {
+          el.style.setProperty("--reveal-delay", `${parseInt(delay, 10)}ms`);
+        }
+
+      });
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+
+          entries.forEach((entry) => {
+
+            if (entry.isIntersecting) {
+              entry.target.classList.add("reveal-visible");
+              observer.unobserve(entry.target);
+            }
+
+          });
+
+        },
+        { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
+      );
+
+      revealTargets.forEach((el) => observer.observe(el));
+
+    }
+
+  }
 
 });

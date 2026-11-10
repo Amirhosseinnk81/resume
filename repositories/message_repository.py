@@ -1,106 +1,59 @@
-import json
-import os
-import threading
-from datetime import datetime
+"""
+Contact message data access.
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+Backed by SQLAlchemy instead of data/messages.json. This is the most
+important one to have moved off a JSON file: the contact form is the only
+public write path, so it was the most exposed to the lost-write race.
+"""
 
-MESSAGES_FILE = os.path.join(BASE_DIR, "data", "messages.json")
-
-# See project_repository.py for why this lock exists (process-local only).
-# Especially relevant here since the contact form is public-facing.
-_lock = threading.Lock()
+from extensions import db
+from models import ContactMessage
 
 
 def get_messages():
-
-    if not os.path.exists(MESSAGES_FILE):
-        return []
-
-    with open(MESSAGES_FILE, "r", encoding="utf-8") as file:
-
-        try:
-            return json.load(file)
-        except json.JSONDecodeError:
-            return []
+    """Newest first — the admin inbox wants the latest message on top."""
+    rows = ContactMessage.query.order_by(ContactMessage.id.desc()).all()
+    return [row.to_dict() for row in rows]
 
 
 def get_message_by_id(message_id):
-
-    messages = get_messages()
-
-    for message in messages:
-
-        if message.get("id") == message_id:
-            return message
-
-    return None
-
-
-def _save(messages):
-
-    with open(MESSAGES_FILE, "w", encoding="utf-8") as file:
-
-        json.dump(messages, file, ensure_ascii=False, indent=2)
+    row = db.session.get(ContactMessage, message_id)
+    return row.to_dict() if row else None
 
 
 def create_message(name, email, body):
-
-    with _lock:
-
-        messages = get_messages()
-
-        new_id = max((m.get("id", 0) for m in messages), default=0) + 1
-
-        message = {
-            "id": new_id,
-            "name": name,
-            "email": email,
-            "message": body,
-            "created_at": datetime.now().isoformat(timespec="seconds"),
-            "read": False,
-        }
-
-        messages.append(message)
-
-        _save(messages)
-
-        return message
+    row = ContactMessage(name=name, email=email, message=body, read=False)
+    db.session.add(row)
+    db.session.commit()
+    return row.to_dict()
 
 
 def set_read(message_id, read=True):
-
-    with _lock:
-
-        messages = get_messages()
-
-        for message in messages:
-
-            if message.get("id") == message_id:
-
-                message["read"] = read
-
-                _save(messages)
-
-                return message
-
+    row = db.session.get(ContactMessage, message_id)
+    if row is None:
         return None
+    row.read = bool(read)
+    db.session.commit()
+    return row.to_dict()
 
 
 def delete_message(message_id):
-
-    with _lock:
-
-        messages = get_messages()
-
-        for index, message in enumerate(messages):
-
-            if message.get("id") == message_id:
-
-                deleted_message = messages.pop(index)
-
-                _save(messages)
-
-                return deleted_message
-
+    row = db.session.get(ContactMessage, message_id)
+    if row is None:
         return None
+    data = row.to_dict()
+    db.session.delete(row)
+    db.session.commit()
+    return data
+
+
+def count_messages():
+    return ContactMessage.query.count()
+
+
+def count_unread():
+    """
+    Counted in SQL rather than by loading every message and summing in
+    Python, which the admin context processor did on every single request.
+    """
+    return ContactMessage.query.filter_by(read=False).count()

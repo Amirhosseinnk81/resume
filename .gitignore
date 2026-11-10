@@ -17,3 +17,18 @@ uploads/articles/*
 Thumbs.db
 .vscode/
 .idea/
+
+# Unused source images kept locally but never shipped (see README)
+static/images/amirhossein.jpg
+static/images/ChatGPT Image Sep 29, 2025, 12_05_05 PM.png
+static/images/profile.ico
+
+# SQLite database (regenerate with scripts/migrate_json_to_db.py)
+data/*.db
+data/*.db-journal
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/

@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
 
 {% block title %}
-{{ project.title }} | امیرحسین نعیمائی
+{{ project | loc('title') }} | امیرحسین نعیمائی
 {% endblock %}
 
 {% block meta_description %}
-{{ project.description }}
+{{ project | loc('description') }}
 {% endblock %}
 
 {% block og_title %}
-{{ project.title }}
+{{ project | loc('title') }}
 {% endblock %}
 
 {% block og_desc %}
-{{ project.description }}
+{{ project | loc('description') }}
 {% endblock %}
 
 {% block tw_title %}
-{{ project.title }}
+{{ project | loc('title') }}
 {% endblock %}
 
 {% block tw_desc %}
-{{ project.description }}
+{{ project | loc('description') }}
 {% endblock %}
 
 
@@ -35,7 +35,7 @@
 
         <i class="fa-solid fa-arrow-right"></i>
 
-        بازگشت به پروژه‌ها
+        {{ t.BACK_TO_PROJECTS }}
 
     </a>
 
@@ -54,19 +54,19 @@
             {% if project.status == "completed" %}
 
             <span class="project-status completed">
-                تکمیل شده
+                {{ t.STATUS_COMPLETED }}
             </span>
 
             {% elif project.status == "in-progress" %}
 
             <span class="project-status in-progress">
-                در حال توسعه
+                {{ t.STATUS_IN_PROGRESS }}
             </span>
 
             {% elif project.status == "planned" %}
 
             <span class="project-status planned">
-                برنامه‌ریزی شده
+                {{ t.STATUS_PLANNED }}
             </span>
 
             {% endif %}
@@ -75,12 +75,12 @@
 
 
         <h1>
-            {{ project.title }}
+            {{ project | loc('title') }}
         </h1>
 
 
         <p>
-            {{ project.description }}
+            {{ project | loc('description') }}
         </p>
 
     </header>
@@ -102,7 +102,7 @@
                 <img src="{{ url_for(
                         'static',
                         filename='images/' ~ project.image
-                    ) }}" alt="{{ project.title }}" loading="lazy">
+                    ) }}" alt="{{ project | loc('title') }}" loading="lazy">
 
             </div>
 
@@ -120,18 +120,31 @@
             <div class="project-detail-content">
 
                 <h2>
-                    درباره پروژه
+                    {{ t.ABOUT_PROJECT }}
                 </h2>
 
                 <p>
-                    {{ project.description }}
+                    {{ project | loc('description') }}
                 </p>
+
+
+                {#
+                  A concrete number per project, the way every reference
+                  portfolio presents one ("8,281 stars", "100k+ installs").
+                  Optional, set per project from the admin panel.
+                #}
+                {% if project.metric_value %}
+                <p class="project-metric">
+                    <span class="project-metric-value">{{ project.metric_value }}</span>
+                    {% if project.metric_label %}<span>{{ project.metric_label }}</span>{% endif %}
+                </p>
+                {% endif %}
 
 
                 {% if project.features %}
 
                 <h2>
-                    قابلیت‌های اصلی
+                    {{ t.KEY_FEATURES }}
                 </h2>
 
                 <div class="project-features">
@@ -169,7 +182,7 @@
             <div class="project-detail-box">
 
                 <h3>
-                    اطلاعات پروژه
+                    {{ t.PROJECT_INFO }}
                 </h3>
 
 
@@ -178,7 +191,7 @@
                 <div class="project-info-row">
 
                     <span>
-                        سال
+                        {{ t.LABEL_YEAR }}
                     </span>
 
                     <strong>
@@ -195,19 +208,19 @@
                 <div class="project-info-row">
 
                     <span>
-                        وضعیت
+                        {{ t.LABEL_STATUS }}
                     </span>
 
                     <strong>
 
                         {% if project.status == "completed" %}
-                        تکمیل شده
+                        {{ t.STATUS_COMPLETED }}
 
                         {% elif project.status == "in-progress" %}
-                        در حال توسعه
+                        {{ t.STATUS_IN_PROGRESS }}
 
                         {% elif project.status == "planned" %}
-                        برنامه‌ریزی شده
+                        {{ t.STATUS_PLANNED }}
 
                         {% endif %}
 
@@ -225,7 +238,7 @@
             <div class="project-detail-box">
 
                 <h3>
-                    تکنولوژی‌ها
+                    {{ t.TECHNOLOGIES }}
                 </h3>
 
 
@@ -255,7 +268,7 @@
             <div class="project-detail-box">
 
                 <h3>
-                    سورس پروژه
+                    {{ t.SOURCE_CODE }}
                 </h3>
 
                 <a href="{{ project.github }}" target="_blank" rel="noopener noreferrer" class="project-detail-github">
@@ -263,7 +276,7 @@
                     <i class="fa-brands fa-github"></i>
 
                     <span>
-                        مشاهده در GitHub
+                        {{ t.VIEW_ON_GITHUB_SHORT }}
                     </span>
 
                     <i class="fa-solid fa-arrow-left"></i>
