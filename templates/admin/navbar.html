@@ -1,89 +1,106 @@
-<nav class="navbar navbar-expand-lg bg-white shadow-sm px-4">
+{# The routes pass an English page_title; the heading is mapped here so the
+   routes stay untouched. Anything unmapped falls back to page_title. #}
+{% set titles = {
+    'admin.dashboard': 'داشبورد',
+    'admin.projects': 'پروژه‌ها',
+    'admin.create_project_view': 'افزودن پروژه',
+    'admin.edit_project': 'ویرایش پروژه',
+    'admin.articles': 'مقالات',
+    'admin.create_article_view': 'افزودن مقاله',
+    'admin.edit_article': 'ویرایش مقاله',
+    'admin.messages': 'پیام‌ها',
+    'admin.settings': 'تنظیمات',
+    'admin.backup': 'پشتیبان‌گیری',
+    'admin.backup_export': 'پشتیبان‌گیری',
+    'admin.backup_import': 'پشتیبان‌گیری',
+} %}
 
-    <div class="container-fluid flex-nowrap">
+<nav class="admin-navbar d-flex align-items-center gap-2">
 
-        <h4 class="mb-0 fw-bold text-truncate me-3">
-            {{ page_title }}
-        </h4>
+    <button class="btn btn-icon d-lg-none flex-shrink-0" type="button"
+            data-bs-toggle="offcanvas" data-bs-target="#adminSidebar"
+            aria-controls="adminSidebar" aria-label="باز کردن منو">
+        <i class="bi bi-list"></i>
+    </button>
 
-        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+    <h4 class="mb-0 fw-bold text-truncate flex-grow-1">
+        {{ titles.get(request.endpoint, page_title) }}
+    </h4>
 
-            <a href="{{ url_for('home') }}" target="_blank" rel="noopener noreferrer"
-                class="btn btn-outline-primary btn-sm d-none d-md-inline-flex align-items-center gap-1 flex-shrink-0">
+    <div class="d-flex align-items-center gap-2 flex-shrink-0">
 
-                <i class="bi bi-box-arrow-up-right"></i>
+        <a href="{{ url_for('home') }}" target="_blank" rel="noopener noreferrer"
+            class="btn btn-outline-primary btn-sm d-none d-md-inline-flex align-items-center gap-1">
 
-                مشاهده سایت
+            <i class="bi bi-box-arrow-up-right"></i>
 
-            </a>
+            مشاهده سایت
 
-            <div class="input-group d-none d-lg-flex" style="width:220px;">
+        </a>
 
-                <span class="input-group-text">
-                    <i class="bi bi-search"></i>
-                </span>
+        <div class="input-group admin-search d-none d-xl-flex">
 
-                <input type="text" class="form-control" placeholder="Search">
+            <span class="input-group-text">
+                <i class="bi bi-search"></i>
+            </span>
 
-            </div>
+            <input type="search" class="form-control" placeholder="جستجو" aria-label="جستجو">
 
-            <button class="btn btn-light position-relative flex-shrink-0">
+        </div>
 
-                <i class="bi bi-bell"></i>
+        {# Was a hardcoded "3". Now the real unread count, linking to the inbox. #}
+        <a class="btn btn-icon position-relative" href="{{ url_for('admin.messages') }}"
+           aria-label="پیام‌های خوانده‌نشده{% if unread_messages %}: {{ unread_messages }}{% endif %}">
 
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    3
-                </span>
+            <i class="bi bi-bell"></i>
+
+            {% if unread_messages %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ unread_messages }}
+            </span>
+            {% endif %}
+
+        </a>
+
+        <button class="btn btn-icon" type="button" id="themeToggle" aria-label="تغییر تم">
+
+            <i class="bi bi-moon"></i>
+
+        </button>
+
+        <div class="dropdown">
+
+            <button class="btn btn-icon dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+
+                <i class="bi bi-person-circle"></i>
+
+                <span class="d-none d-sm-inline ms-1">{{ session["admin"]["username"] }}</span>
 
             </button>
 
-            <button class="btn btn-light flex-shrink-0" id="themeToggle">
+            <ul class="dropdown-menu dropdown-menu-end">
 
-                <i class="bi bi-moon"></i>
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('admin.settings') }}">
+                        <i class="bi bi-gear me-2"></i>تنظیمات
+                    </a>
+                </li>
 
-            </button>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
 
-            <div class="dropdown flex-shrink-0">
+                <li>
+                    <a class="dropdown-item text-danger" href="{{ url_for('admin.logout') }}">
+                        <i class="bi bi-box-arrow-right me-2"></i>خروج
+                    </a>
+                </li>
 
-                <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
-
-                    <i class="bi bi-person-circle"></i>
-
-                    {{ session["admin"]["username"] }}
-
-                </button>
-
-                <ul class="dropdown-menu">
-
-                    <li>
-
-                        <a class="dropdown-item" href="{{ url_for('admin.settings') }}">
-
-                            Settings
-
-                        </a>
-
-                    </li>
-
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-
-                    <li>
-
-                        <a class="dropdown-item text-danger" href="{{ url_for('admin.logout') }}">
-
-                            Logout
-
-                        </a>
-
-                    </li>
-
-                </ul>
-
-            </div>
+            </ul>
 
         </div>
 
     </div>
+
 </nav>

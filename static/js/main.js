@@ -33,8 +33,19 @@ document.addEventListener("DOMContentLoaded", () => {
     window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: dark)").matches;
 
+  // The admin can pin a default in /admin/settings; "auto" follows the OS.
+  const defaultTheme =
+    document.documentElement.getAttribute("data-default-theme");
+
+  function fallbackTheme(dark) {
+    if (defaultTheme === "dark" || defaultTheme === "light") {
+      return defaultTheme;
+    }
+    return dark ? "dark" : "light";
+  }
+
   const savedTheme =
-    readStoredTheme() || (prefersDark ? "dark" : "light");
+    readStoredTheme() || fallbackTheme(prefersDark);
 
   applyTheme(savedTheme);
 
@@ -44,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .matchMedia("(prefers-color-scheme: dark)")
       .addEventListener("change", (event) => {
         if (!readStoredTheme()) {
-          applyTheme(event.matches ? "dark" : "light");
+          applyTheme(fallbackTheme(event.matches));
         }
       });
   }

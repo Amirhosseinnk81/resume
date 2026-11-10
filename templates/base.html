@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="{{ lang }}" dir="{{ 'rtl' if lang == 'fa' else 'ltr' }}">
+<html lang="{{ lang }}" dir="{{ 'rtl' if lang == 'fa' else 'ltr' }}"
+      data-default-theme="{{ DEFAULT_THEME }}">
 
 <head>
     <meta charset="utf-8">
@@ -103,20 +104,23 @@
 
     <script>
         // Set the theme before first paint to avoid a light->dark flash.
-        // An explicit saved choice always wins; otherwise fall back to the
-        // visitor's OS preference, so a first-time visitor on a dark system
-        // no longer gets a white page (previously it always defaulted light).
+        // An explicit saved choice always wins. Otherwise use the default
+        // from /admin/settings (data-default-theme on <html>); when that is
+        // "auto", follow the visitor's OS preference.
         (function () {
+            var fallback = document.documentElement.getAttribute("data-default-theme");
+            if (fallback !== "dark" && fallback !== "light") {
+                fallback = window.matchMedia
+                    && window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "dark" : "light";
+            }
+            var saved = null;
             try {
-                var saved = localStorage.getItem("theme");
-                var prefersDark = window.matchMedia
-                    && window.matchMedia("(prefers-color-scheme: dark)").matches;
-                var theme = saved || (prefersDark ? "dark" : "light");
-                document.body.setAttribute("data-theme", theme);
+                saved = localStorage.getItem("theme");
             } catch (e) {
                 // localStorage can throw in private mode / blocked storage.
-                document.body.setAttribute("data-theme", "light");
             }
+            document.body.setAttribute("data-theme", saved || fallback);
         })();
     </script>
 
@@ -480,7 +484,7 @@
          IntersectionObserver in main.js. The existing data-aos attributes in
          the templates are read by that code, so no markup changed. -->
 
-    <script src="{{ url_for('static', filename='js/main.js') }}" defer>
+    <script src="{{ url_for('static', filename='js/main.js', v=static_version('js/main.js')) }}" defer>
     </script>
 
 </body>

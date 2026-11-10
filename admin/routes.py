@@ -83,6 +83,25 @@ def inject_unread_messages():
     return {"unread_messages": count_unread()}
 
 
+@admin_bp.context_processor
+def inject_admin_asset():
+    """
+    Static files are cached for 30 days and marked immutable, so a changed
+    admin.css would otherwise not reach a returning browser. The file's
+    mtime in the query string gives every deploy a fresh URL.
+    """
+
+    def admin_asset(filename):
+        path = os.path.join(current_app.static_folder, "admin", filename)
+        try:
+            version = int(os.path.getmtime(path))
+        except OSError:
+            version = None
+        return url_for("static", filename=f"admin/{filename}", v=version)
+
+    return {"admin_asset": admin_asset}
+
+
 # --- Auth -------------------------------------------------------------
 
 
@@ -361,6 +380,8 @@ def settings():
                 "linkedin": stored["socials"].get("linkedin", ""),
                 "twitter": stored["socials"].get("twitter", ""),
                 "skills": stored["skills"],
+                "default_lang": stored["appearance"]["default_lang"],
+                "default_theme": stored["appearance"]["default_theme"],
             }
         )
 

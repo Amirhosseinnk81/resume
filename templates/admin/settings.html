@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% from "admin/_macros.html" import field, file_field, form_errors %}
+{% from "admin/_macros.html" import field, file_field, form_errors, select %}
 
 {% block title %}Settings | Admin{% endblock %}
 
@@ -48,6 +48,37 @@
             <a href="{{ url_for('download_resume') }}" class="btn btn-outline-secondary btn-sm" target="_blank">
               <i class="bi bi-download"></i> دانلود رزومهٔ فعلی
             </a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Appearance -->
+      <div class="col-12">
+        <div class="card">
+
+          <div class="card-header">
+            <i class="bi bi-palette"></i> زبان و ظاهر پیش‌فرض
+          </div>
+
+          <div class="card-body">
+
+            <p class="text-body-secondary small">
+              این دو فقط برای بازدیدکننده‌ای اعمال می‌شوند که هنوز خودش زبان یا تم را
+              عوض نکرده است. انتخاب خود بازدیدکننده همیشه اولویت دارد.
+            </p>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                {{ select(form.default_lang,
+                          help="زبانی که سایت در اولین بازدید با آن باز می‌شود.") }}
+              </div>
+              <div class="col-md-6">
+                {{ select(form.default_theme,
+                          help="روی سایت و همین پنل مدیریت اعمال می‌شود.") }}
+              </div>
+            </div>
+
           </div>
 
         </div>

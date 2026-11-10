@@ -184,12 +184,29 @@ def _register_jinja(app):
         return entry.get(field, "")
 
 
+def _static_version(filename):
+    """
+    mtime of a static file, for a cache-busting query string. Static files
+    are served immutable for 30 days, so a changed script needs a new URL.
+    """
+    try:
+        return int(os.path.getmtime(os.path.join(current_app.static_folder, filename)))
+    except OSError:
+        return None
+
+
 def _register_hooks(app):
 
     @app.before_request
     def set_lang():
         if session.get("lang") not in TRANSLATIONS:
-            session["lang"] = DEFAULT_LANG
+            # Only a visitor with no language of their own gets the default
+            # chosen in /admin/settings; an explicit switch always wins.
+            try:
+                session["lang"] = get_settings()["appearance"]["default_lang"]
+            except Exception:  # noqa: BLE001 - a settings read must not 500 the site
+                db.session.rollback()
+                session["lang"] = DEFAULT_LANG
 
     @app.after_request
     def count_view(response):
@@ -282,6 +299,8 @@ def _register_hooks(app):
             current_year=now.year,
             t=translations,
             lang=lang,
+            DEFAULT_THEME=settings["appearance"]["default_theme"],
+            static_version=_static_version,
             canonical_url=canonical_url,
             person_schema=person_schema(settings, lang),
         )

@@ -25,6 +25,7 @@ from seed import seed_if_empty
 
 PDF_BYTES = b"%PDF-1.4 backup test"
 SKILLS = [{"name": "Rust", "category": "languages"}]
+APPEARANCE = {"default_lang": "en", "default_theme": "dark"}
 
 
 @pytest.fixture(autouse=True)
@@ -65,7 +66,13 @@ def populated(app, db):
             "views": 42,
         }
     )
-    update_settings({"socials": {"github": "https://github.com/x"}, "skills": SKILLS})
+    update_settings(
+        {
+            "socials": {"github": "https://github.com/x"},
+            "skills": SKILLS,
+            "appearance": APPEARANCE,
+        }
+    )
     create_message("Sara", "sara@example.com", "a private message")
 
     db.session.add(PageView(path="/", day=date(2026, 11, 1), count=7))
@@ -149,6 +156,7 @@ def test_round_trip_restores_the_same_data(app, db, populated, resume_path):
 
     assert get_settings()["skills"] == SKILLS
     assert get_settings()["socials"] == {"github": "https://github.com/x"}
+    assert get_settings()["appearance"] == APPEARANCE
 
     view = PageView.query.one()
     assert (view.path, view.day, view.count) == ("/", date(2026, 11, 1), 7)

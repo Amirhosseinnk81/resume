@@ -1,155 +1,130 @@
 {% extends "admin/base.html" %}
 
-{% block title %}
+{% block title %}داشبورد | پنل مدیریت{% endblock %}
 
-Dashboard
+{# One stat tile. `tone` is a Bootstrap theme colour; the *-subtle utilities
+   it expands to are redefined by Bootstrap for dark mode. #}
+{% macro stat_card(label, value, icon, tone, note="") %}
+<div class="card stat-card shadow-sm h-100">
+  <div class="card-body d-flex align-items-center gap-3">
 
-{% endblock %}
+    <div class="stat-icon bg-{{ tone }}-subtle text-{{ tone }}-emphasis flex-shrink-0">
+      <i class="bi {{ icon }}"></i>
+    </div>
+
+    <div class="min-w-0">
+      <div class="stat-label">{{ label }}</div>
+      <div class="stat-value">{{ value }}</div>
+      {% if note %}<div class="stat-note">{{ note }}</div>{% endif %}
+    </div>
+
+  </div>
+</div>
+{% endmacro %}
 
 {% block content %}
 
 <div class="container-fluid">
 
-<div class="row g-4">
+  <div class="row g-4">
 
-<div class="col-lg-3">
+    <div class="col-sm-6 col-xl-3">
+      {{ stat_card("پروژه‌ها", stats.projects, "bi-kanban", "primary") }}
+    </div>
 
-<div class="card shadow-sm">
+    <div class="col-sm-6 col-xl-3">
+      {{ stat_card("مقالات", stats.articles, "bi-journal-text", "success") }}
+    </div>
 
-<div class="card-body">
+    <div class="col-sm-6 col-xl-3">
+      {{ stat_card("پیام‌ها", stats.messages, "bi-envelope", "warning",
+                   (stats.unread_messages ~ " خوانده‌نشده") if stats.unread_messages else "") }}
+    </div>
 
-<h6>Projects</h6>
+    <div class="col-sm-6 col-xl-3">
+      {# A real aggregate from the page_views table (path + day + count; no
+         IPs, no cookies). #}
+      {{ stat_card("بازدیدکنندگان", stats.visitors | thousands, "bi-people", "info",
+                   (stats.visitors_30d | thousands) ~ " در ۳۰ روز گذشته") }}
+    </div>
 
-<h2>{{ stats.projects }}</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-lg-3">
-
-<div class="card shadow-sm">
-
-<div class="card-body">
-
-<h6>Articles</h6>
-
-<h2>{{ stats.articles }}</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-lg-3">
-
-<div class="card shadow-sm">
-
-<div class="card-body">
-
-<h6>Messages</h6>
-
-<h2>{{ stats.messages }}</h2>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-lg-3">
-
-<div class="card shadow-sm">
-
-<div class="card-body">
-
-<h6>Visitors</h6>
-
-{# Was a hardcoded 0 that was never incremented. Now a real aggregate from
-   the page_views table (path + day + count; no IPs, no cookies). #}
-<h2>{{ stats.visitors | thousands }}</h2>
-
-<small class="text-muted">
-  {{ stats.visitors_30d | thousands }} در ۳۰ روز گذشته
-</small>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
+  </div>
 
 
-<div class="row g-4 mt-1">
+  <div class="row g-4 mt-1">
 
-  <!-- Views over the last 14 days -->
-  <div class="col-lg-8">
-    <div class="card shadow-sm h-100">
-      <div class="card-header py-2">
-        <small class="text-muted">بازدید ۱۴ روز گذشته</small>
-      </div>
-      <div class="card-body">
+    <!-- Views over the last 14 days -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100">
+        <div class="card-header py-2">
+          <small class="text-body-secondary">بازدید ۱۴ روز گذشته</small>
+        </div>
+        <div class="card-body">
 
-        {% set series = stats.views_series %}
-        {% set peak = (series | map(attribute='views') | max) or 1 %}
+          {% set series = stats.views_series %}
+          {% set peak = (series | map(attribute='views') | max) or 1 %}
 
-        {# Pure-CSS bar chart: no charting library, no extra request. #}
-        <div class="d-flex align-items-end gap-1" style="height:120px;">
-          {% for point in series %}
-          <div class="flex-fill d-flex flex-column justify-content-end h-100"
-               title="{{ point.day }} — {{ point.views }}">
-            <div style="height: {{ (point.views / peak * 100) | round(1) }}%;
-                        min-height: 2px;
-                        background: linear-gradient(180deg, #2563eb, #7c3aed);
-                        border-radius: 3px 3px 0 0;"></div>
+          {#
+            Pure-CSS bar chart: no charting library, no extra request.
+
+            The series runs oldest to newest and the row inherits dir="rtl",
+            so the oldest day sits on the right and the newest on the left —
+            time flows in the reading direction.
+          #}
+          <div class="views-chart" role="img"
+               aria-label="نمودار بازدید روزانه در ۱۴ روز گذشته">
+            {% for point in series %}
+            {% set label = point.day[8:10] ~ "/" ~ point.day[5:7] %}
+            <div class="views-chart__col" tabindex="0"
+                 data-bs-toggle="tooltip" data-bs-placement="top"
+                 data-bs-title="{{ point.views | thousands }} بازدید — {{ label }}">
+              <div class="views-chart__bar"
+                   style="height: {{ (point.views / peak * 100) | round(1) }}%;"></div>
+            </div>
+            {% endfor %}
           </div>
+
+          {# Every third day, counted back from today so the newest column is
+             always labelled. #}
+          <div class="views-chart__axis" aria-hidden="true">
+            {% for point in series %}
+            <div class="views-chart__tick">
+              {% if loop.revindex0 % 3 == 0 %}
+              <span dir="ltr">{{ point.day[8:10] }}/{{ point.day[5:7] }}</span>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Top pages -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header py-2">
+          <small class="text-body-secondary">پربازدیدترین صفحات</small>
+        </div>
+        <div class="list-group list-group-flush">
+          {% for page in stats.top_pages %}
+          <div class="list-group-item d-flex justify-content-between align-items-center gap-2 py-2">
+            <span class="text-truncate small" dir="ltr">{{ page.path }}</span>
+            <span class="badge bg-primary rounded-pill">{{ page.views | thousands }}</span>
+          </div>
+          {% else %}
+          <div class="list-group-item text-body-secondary small py-3">هنوز بازدیدی ثبت نشده است.</div>
           {% endfor %}
         </div>
-
-        <div class="d-flex justify-content-between mt-2">
-          <small class="text-muted">{{ series[0].day if series else '' }}</small>
-          <small class="text-muted">{{ series[-1].day if series else '' }}</small>
-        </div>
-
       </div>
     </div>
-  </div>
 
-  <!-- Top pages -->
-  <div class="col-lg-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-header py-2">
-        <small class="text-muted">پربازدیدترین صفحات</small>
-      </div>
-      <div class="list-group list-group-flush">
-        {% for page in stats.top_pages %}
-        <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-          <span class="text-truncate small" dir="ltr">{{ page.path }}</span>
-          <span class="badge bg-primary rounded-pill">{{ page.views | thousands }}</span>
-        </div>
-        {% else %}
-        <div class="list-group-item text-muted small py-3">هنوز بازدیدی ثبت نشده است.</div>
-        {% endfor %}
-      </div>
+    <!-- Article views -->
+    <div class="col-12">
+      {{ stat_card("مجموع بازدید مقالات", stats.article_views | thousands, "bi-eye",
+                   "danger", "شمارش از جدول مقالات") }}
     </div>
-  </div>
 
-  <!-- Article views -->
-  <div class="col-12">
-    <div class="card shadow-sm">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <h6 class="mb-1">مجموع بازدید مقالات</h6>
-          <small class="text-muted">شمارش از جدول مقالات</small>
-        </div>
-        <h2 class="mb-0">{{ stats.article_views | thousands }}</h2>
-      </div>
-    </div>
   </div>
 
 </div>

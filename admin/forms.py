@@ -223,6 +223,15 @@ class SkillEntryForm(FlaskForm):
     category = SelectField("دسته", choices=SKILL_CATEGORY_CHOICES, default="tools")
 
 
+SITE_LANGUAGE_CHOICES = [("fa", "فارسی"), ("en", "English")]
+
+SITE_THEME_CHOICES = [
+    ("auto", "خودکار (هماهنگ با سیستم بازدیدکننده)"),
+    ("light", "روشن"),
+    ("dark", "تیره"),
+]
+
+
 class SettingsForm(FlaskForm):
 
     github = StringField(
@@ -236,6 +245,16 @@ class SettingsForm(FlaskForm):
     )
 
     skills = FieldList(FormField(SkillEntryForm), min_entries=0)
+
+    # validate_choice is off so a submission without these fields is not
+    # rejected; the repository normalises the values and keeps the stored
+    # one for anything missing or unknown.
+    default_lang = SelectField(
+        "زبان پیش‌فرض سایت", choices=SITE_LANGUAGE_CHOICES, validate_choice=False
+    )
+    default_theme = SelectField(
+        "تم پیش‌فرض", choices=SITE_THEME_CHOICES, validate_choice=False
+    )
 
     resume = FileField(
         "فایل رزومه (PDF)",
@@ -260,6 +279,14 @@ class SettingsForm(FlaskForm):
                 "twitter": (self.twitter.data or "").strip(),
             },
             "skills": skills,
+            "appearance": {
+                key: value
+                for key, value in (
+                    ("default_lang", self.default_lang.data),
+                    ("default_theme", self.default_theme.data),
+                )
+                if value
+            },
         }
 
 

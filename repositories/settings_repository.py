@@ -46,9 +46,17 @@ DEFAULT_SKILLS = [
     {"name": "Linux", "category": "tools"},
 ]
 
+# What a first-time visitor gets before they pick anything themselves.
+# "auto" follows the visitor's operating system.
+SITE_LANGUAGES = ("fa", "en")
+SITE_THEMES = ("auto", "light", "dark")
+
+DEFAULT_APPEARANCE = {"default_lang": "fa", "default_theme": "auto"}
+
 DEFAULT_SETTINGS = {
     "socials": DEFAULT_SOCIALS,
     "skills": DEFAULT_SKILLS,
+    "appearance": DEFAULT_APPEARANCE,
 }
 
 _CACHE_KEY = "_settings_cache"
@@ -83,6 +91,19 @@ def _normalise_skills(skills):
     return normalised or list(DEFAULT_SKILLS)
 
 
+def _normalise_appearance(value, base=DEFAULT_APPEARANCE):
+    """Unknown or missing values fall back to `base`, key by key."""
+    appearance = dict(base)
+
+    if isinstance(value, dict):
+        if value.get("default_lang") in SITE_LANGUAGES:
+            appearance["default_lang"] = value["default_lang"]
+        if value.get("default_theme") in SITE_THEMES:
+            appearance["default_theme"] = value["default_theme"]
+
+    return appearance
+
+
 def _read_raw():
     rows = {row.key: row.value for row in Setting.query.all()}
 
@@ -103,6 +124,7 @@ def _read_raw():
     settings["socials"] = {k: v for k, v in socials.items() if v}
 
     settings["skills"] = _normalise_skills(settings.get("skills"))
+    settings["appearance"] = _normalise_appearance(settings.get("appearance"))
 
     return settings
 
@@ -110,7 +132,11 @@ def _read_raw():
 def get_settings():
     """Memoised for the duration of the request."""
     if not has_app_context():
-        return {"socials": dict(DEFAULT_SOCIALS), "skills": list(DEFAULT_SKILLS)}
+        return {
+            "socials": dict(DEFAULT_SOCIALS),
+            "skills": list(DEFAULT_SKILLS),
+            "appearance": dict(DEFAULT_APPEARANCE),
+        }
 
     cached = getattr(g, _CACHE_KEY, None)
     if cached is not None:
@@ -144,6 +170,10 @@ def update_settings(new_settings):
 
         if key == "skills":
             value = _normalise_skills(value)
+
+        if key == "appearance":
+            # A missing or unknown field keeps what is already stored.
+            value = _normalise_appearance(value, base=_read_raw()["appearance"])
 
         payload = json.dumps(value, ensure_ascii=False)
 
@@ -180,6 +210,9 @@ def import_settings(data, mode="merge"):
 
         if key == "skills":
             value = _normalise_skills(value)
+
+        if key == "appearance":
+            value = _normalise_appearance(value)
 
         payload = json.dumps(value, ensure_ascii=False)
 

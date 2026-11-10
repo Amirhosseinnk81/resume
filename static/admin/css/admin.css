@@ -1,58 +1,123 @@
+/*
+  Admin panel styles.
+
+  Every colour comes from a custom property declared here, and the dark
+  theme only redefines those properties — no rule below names a colour.
+  The theme is the `data-bs-theme` attribute on <html>, so Bootstrap's own
+  components (cards, forms, tables, dropdowns) switch with it.
+*/
+
 :root{
 
     --primary:#2563eb;
-    --sidebar:#111827;
-    --sidebar-hover:#1f2937;
+    --on-primary:#ffffff;
+
     --background:#f5f7fb;
     --surface:#ffffff;
     --border:#e5e7eb;
     --text:#111827;
+    --text-muted:#6b7280;
+    --hover:#eef2f7;
+    --shadow:0 10px 25px rgba(0,0,0,.08);
+
+    /* The sidebar is dark in both themes. */
+    --sidebar:#111827;
+    --sidebar-hover:#1f2937;
+    --sidebar-text:#d1d5db;
+    --sidebar-text-strong:#ffffff;
+    --sidebar-danger:#f87171;
+
+    --chart-from:#2563eb;
+    --chart-to:#7c3aed;
+
+    --sidebar-width:260px;
+    --navbar-height:70px;
+
 }
 
-*{
+[data-bs-theme="dark"]{
 
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:"Vazirmatn",sans-serif;
+    --background:#0b1120;
+    --surface:#111827;
+    --border:#1f2937;
+    --text:#e5e7eb;
+    --text-muted:#9ca3af;
+    --hover:#1f2937;
+    --shadow:0 10px 25px rgba(0,0,0,.5);
+
+    --sidebar:#0f172a;
+    --sidebar-hover:#1e293b;
+
+    --chart-from:#60a5fa;
+    --chart-to:#a78bfa;
+
+    /* Bootstrap's fixed primary/danger/secondary are tuned for a white
+       page and drop below 4.5:1 on the dark surface. */
+    --accent-text:#93c5fd;
+    --danger-text:#fca5a5;
+    --neutral-text:#cbd5e1;
+
+}
+
+/* !important only because Bootstrap's own .text-danger carries it. */
+[data-bs-theme="dark"] .text-danger{
+
+    color:var(--danger-text) !important;
+
+}
+
+[data-bs-theme="dark"] .btn-outline-primary{
+
+    --bs-btn-color:var(--accent-text);
+    --bs-btn-border-color:var(--accent-text);
+
+}
+
+[data-bs-theme="dark"] .btn-outline-danger{
+
+    --bs-btn-color:var(--danger-text);
+    --bs-btn-border-color:var(--danger-text);
+
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary{
+
+    --bs-btn-color:var(--neutral-text);
+    --bs-btn-border-color:var(--neutral-text);
 
 }
 
 body{
 
+    font-family:"Vazirmatn",system-ui,sans-serif;
     background:var(--background);
     color:var(--text);
 
+    /* Hand the palette to Bootstrap so its components follow it. */
+    --bs-body-bg:var(--background);
+    --bs-body-color:var(--text);
+    --bs-border-color:var(--border);
+    --bs-secondary-color:var(--text-muted);
+
 }
 
+/* ---------- Layout ---------- */
+
+/* No flex-direction here: with dir="rtl" the first child (the sidebar)
+   already sits on the right. */
 .admin-wrapper{
 
     display:flex;
-    flex-direction:row-reverse;
     min-height:100vh;
-
-}
-
-.sidebar{
-
-    width:260px;
-    background:var(--sidebar);
 
 }
 
 .main-content{
 
     flex:1;
+    min-width:0; /* lets wide tables scroll inside instead of widening the page */
     display:flex;
     flex-direction:column;
-
-}
-
-.navbar{
-
-    height:70px;
-    background:white;
-    border-bottom:1px solid var(--border);
 
 }
 
@@ -61,9 +126,45 @@ body{
     padding:30px;
 
 }
-.sidebar .list-group{
 
-    background:transparent;
+.min-w-0{
+
+    min-width:0;
+
+}
+
+/* ---------- Sidebar ---------- */
+
+.sidebar{
+
+    --bs-offcanvas-width:var(--sidebar-width);
+    --bs-offcanvas-bg:var(--sidebar);
+    --bs-offcanvas-color:var(--sidebar-text-strong);
+
+}
+
+/* Bootstrap forces .offcanvas-lg transparent from 992px up, so the colour
+   and the scrolling live on the inner element. */
+.sidebar-inner{
+
+    height:100%;
+    overflow-y:auto;
+    background:var(--sidebar);
+    color:var(--sidebar-text-strong);
+
+}
+
+@media (min-width:992px){
+
+    .sidebar{
+
+        flex:0 0 var(--sidebar-width);
+        width:var(--sidebar-width);
+        position:sticky;
+        top:0;
+        height:100vh;
+
+    }
 
 }
 
@@ -71,66 +172,229 @@ body{
 
     background:transparent;
     border:none;
-    color:#d1d5db;
+    color:var(--sidebar-text);
     border-radius:10px;
     margin-bottom:6px;
-    transition:.2s;
+    transition:background-color .2s,color .2s;
 
 }
 
-.sidebar .list-group-item:hover{
+.sidebar .list-group-item:hover,
+.sidebar .list-group-item:focus-visible{
 
     background:var(--sidebar-hover);
-    color:white;
+    color:var(--sidebar-text-strong);
 
 }
 
 .sidebar .list-group-item.active{
 
     background:var(--primary);
-    color:white;
+    color:var(--on-primary);
 
 }
 
-.sidebar i{
+.sidebar .sidebar-logout{
 
-    margin-left:10px;
+    color:var(--sidebar-danger);
 
 }
+
 /* ---------- Navbar ---------- */
 
-.navbar{
+.admin-navbar{
 
+    position:sticky;
+    top:0;
+    z-index:1020;
+    min-height:var(--navbar-height);
     padding:0 24px;
-
-    height:70px;
-
-}
-
-.navbar .input-group{
-
-    width:260px;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
 
 }
 
-.navbar .btn{
+.admin-navbar .btn{
 
     border-radius:12px;
+
+}
+
+.admin-navbar .btn-icon{
+
+    --bs-btn-color:var(--text);
+    --bs-btn-bg:var(--background);
+    --bs-btn-border-color:var(--border);
+    --bs-btn-hover-color:var(--text);
+    --bs-btn-hover-bg:var(--hover);
+    --bs-btn-hover-border-color:var(--border);
+    --bs-btn-active-color:var(--text);
+    --bs-btn-active-bg:var(--hover);
+    --bs-btn-active-border-color:var(--border);
+
+}
+
+.admin-search{
+
+    width:220px;
+
+}
+
+.admin-navbar .badge,
+.sidebar .badge{
+
+    font-size:10px;
 
 }
 
 .dropdown-menu{
 
     border-radius:12px;
-
-    border:none;
-
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
 
 }
 
-.badge{
+/* ---------- Cards ---------- */
 
-    font-size:10px;
+.card{
+
+    --bs-card-bg:var(--surface);
+    --bs-card-border-color:var(--border);
+    --bs-card-cap-bg:transparent;
+
+}
+
+.card .list-group{
+
+    --bs-list-group-bg:transparent;
+    --bs-list-group-border-color:var(--border);
+    --bs-list-group-color:var(--text);
+
+}
+
+/* ---------- Dashboard ---------- */
+
+/* Tall enough for a tile with a note, so tiles match when they stack. */
+.stat-card{
+
+    min-height:110px;
+
+}
+
+.stat-icon{
+
+    width:52px;
+    height:52px;
+    display:grid;
+    place-items:center;
+    border-radius:14px;
+    font-size:1.4rem;
+
+}
+
+.stat-label{
+
+    font-size:.85rem;
+    color:var(--text-muted);
+
+}
+
+.stat-value{
+
+    font-size:1.75rem;
+    font-weight:700;
+    line-height:1.3;
+
+}
+
+.stat-note{
+
+    font-size:.8rem;
+    color:var(--text-muted);
+
+}
+
+.views-chart,
+.views-chart__axis{
+
+    display:flex;
+    gap:4px;
+
+}
+
+.views-chart{
+
+    align-items:flex-end;
+    height:140px;
+    border-bottom:1px solid var(--border);
+
+}
+
+.views-chart__col{
+
+    flex:1 1 0;
+    min-width:0;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    border-radius:3px 3px 0 0;
+    cursor:default;
+
+}
+
+.views-chart__col:hover,
+.views-chart__col:focus-visible{
+
+    background:var(--hover);
+    outline:none;
+
+}
+
+.views-chart__bar{
+
+    min-height:2px;
+    border-radius:3px 3px 0 0;
+    background:linear-gradient(180deg,var(--chart-from),var(--chart-to));
+
+}
+
+.views-chart__axis{
+
+    margin-top:6px;
+
+}
+
+/* Labels are wider than a column on a phone, so they are centred on their
+   column and allowed to overhang it. */
+.views-chart__tick{
+
+    flex:1 1 0;
+    min-width:0;
+    height:1.2em;
+    display:flex;
+    justify-content:center;
+    font-size:.7rem;
+    white-space:nowrap;
+    color:var(--text-muted);
+
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width:575.98px){
+
+    .content{
+
+        padding:16px;
+
+    }
+
+    .admin-navbar{
+
+        padding:0 12px;
+
+    }
 
 }
