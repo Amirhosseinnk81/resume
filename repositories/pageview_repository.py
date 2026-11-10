@@ -13,6 +13,8 @@ from sqlalchemy.exc import IntegrityError
 from extensions import db
 from models import PageView
 
+from ._backup import parse_day
+
 
 def record_view(path):
     """
@@ -89,3 +91,31 @@ def daily_series(days=14):
         series.append({"day": day.isoformat(), "views": int(rows.get(day, 0))})
 
     return series
+
+
+# --- Backup -----------------------------------------------------------
+
+
+def export_pageviews():
+    rows = PageView.query.order_by(PageView.day, PageView.path).all()
+    return [
+        {"path": row.path, "day": row.day.isoformat(), "count": row.count}
+        for row in rows
+    ]
+
+
+def import_pageviews(rows, mode="merge"):
+    """Does not commit — see repositories/_backup.py."""
+    if mode == "replace":
+        PageView.query.delete()
+
+    for item in rows:
+        day = parse_day(item["day"])
+        row = PageView.query.filter_by(path=item["path"], day=day).first()
+        if row is None:
+            row = PageView(path=item["path"], day=day)
+            db.session.add(row)
+        row.count = int(item["count"])
+
+    db.session.flush()
+    return len(rows)

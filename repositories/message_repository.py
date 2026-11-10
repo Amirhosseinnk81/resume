@@ -9,6 +9,8 @@ public write path, so it was the most exposed to the lost-write race.
 from extensions import db
 from models import ContactMessage
 
+from ._backup import get_or_new, iso, restore_timestamps
+
 
 def get_messages():
     """Newest first — the admin inbox wants the latest message on top."""
@@ -57,3 +59,38 @@ def count_unread():
     Python, which the admin context processor did on every single request.
     """
     return ContactMessage.query.filter_by(read=False).count()
+
+
+# --- Backup -----------------------------------------------------------
+
+
+def export_messages():
+    rows = ContactMessage.query.order_by(ContactMessage.id).all()
+    return [
+        {
+            "id": row.id,
+            "name": row.name,
+            "email": row.email,
+            "message": row.message,
+            "read": bool(row.read),
+            "created_at": iso(row.created_at),
+        }
+        for row in rows
+    ]
+
+
+def import_messages(rows, mode="merge"):
+    """Does not commit — see repositories/_backup.py."""
+    if mode == "replace":
+        ContactMessage.query.delete()
+
+    for item in rows:
+        row = get_or_new(ContactMessage, item, mode)
+        row.name = item["name"]
+        row.email = item["email"]
+        row.message = item["message"]
+        row.read = bool(item.get("read"))
+        restore_timestamps(row, item)
+
+    db.session.flush()
+    return len(rows)

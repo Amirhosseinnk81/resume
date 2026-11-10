@@ -21,6 +21,7 @@ from wtforms import (
     IntegerField,
     PasswordField,
     SelectField,
+    SelectMultipleField,
     StringField,
     TextAreaField,
 )
@@ -260,6 +261,52 @@ class SettingsForm(FlaskForm):
             },
             "skills": skills,
         }
+
+
+BACKUP_TABLE_CHOICES = [
+    ("projects", "پروژه‌ها"),
+    ("articles", "مقالات و فایل‌های PDF"),
+    ("settings", "تنظیمات، مهارت‌ها و فایل رزومه"),
+    ("pageviews", "آمار بازدید"),
+    ("messages", "پیام‌ها"),
+]
+
+BACKUP_MODES = [
+    ("merge", "ادغام — موارد موجود به‌روزرسانی و موارد جدید اضافه می‌شوند"),
+    ("replace", "جایگزینی — بخش‌های انتخاب‌شده خالی و از فایل پر می‌شوند"),
+]
+
+
+class BackupExportForm(FlaskForm):
+    # Off by default: messages carry other people's names and addresses.
+    include_messages = BooleanField("پیام‌های فرم تماس هم در فایل باشند")
+
+
+class BackupImportForm(FlaskForm):
+
+    archive = FileField(
+        "فایل پشتیبان (ZIP)",
+        validators=[
+            FileRequired("فایل پشتیبان را انتخاب کنید."),
+            FileAllowed(["zip"], "فقط فایل ZIP مجاز است."),
+        ],
+    )
+    mode = SelectField("حالت بازگردانی", choices=BACKUP_MODES, default="merge")
+    tables = SelectMultipleField(
+        "بخش‌ها",
+        choices=BACKUP_TABLE_CHOICES,
+        default=[value for value, _ in BACKUP_TABLE_CHOICES],
+        validators=[DataRequired("حداقل یک بخش را انتخاب کنید.")],
+    )
+    confirm_replace = BooleanField(
+        "می‌دانم که داده‌های فعلیِ بخش‌های انتخاب‌شده حذف می‌شوند."
+    )
+
+    def validate_confirm_replace(self, field):
+        if self.mode.data == "replace" and not field.data:
+            raise ValidationError(
+                "برای حالت جایگزینی باید حذف داده‌های فعلی را تأیید کنید."
+            )
 
 
 class ContactForm(FlaskForm):

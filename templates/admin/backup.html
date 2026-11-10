@@ -1,0 +1,121 @@
+{% extends "admin/base.html" %}
+{% from "admin/_macros.html" import select, form_errors %}
+
+{% block title %}Backup | Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <h1 class="h4 mb-4"><i class="bi bi-cloud-arrow-down"></i> پشتیبان‌گیری</h1>
+
+  <div class="alert alert-info">
+    با هر استقرار، پایگاه داده و فایل‌های آپلودشده از نو ساخته می‌شوند.
+    پیش از استقرار خروجی بگیرید و بعد از آن همان فایل را با حالت «جایگزینی» بازگردانید.
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Export -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+
+        <div class="card-header">
+          <i class="bi bi-download"></i> دریافت فایل پشتیبان
+        </div>
+
+        <div class="card-body">
+
+          {{ form_errors(export_form) }}
+
+          <p class="text-muted small">
+            یک فایل ZIP شامل پروژه‌ها، مقالات (با تعداد بازدید و فایل PDF)، تنظیمات و مهارت‌ها،
+            آمار بازدید و فایل رزومه. هیچ رمز یا کلید محرمانه‌ای در این فایل قرار نمی‌گیرد.
+          </p>
+
+          <form method="post" action="{{ url_for('admin.backup_export') }}">
+
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-check mb-1">
+              {{ export_form.include_messages(class="form-check-input") }}
+              <label class="form-check-label" for="{{ export_form.include_messages.id }}">
+                {{ export_form.include_messages.label.text }}
+              </label>
+            </div>
+            <div class="form-text mb-3">
+              پیام‌ها شامل نام و ایمیل افراد هستند؛ فقط در صورت نیاز انتخاب کنید و فایل را در جای امن نگه دارید.
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-download"></i> دانلود پشتیبان
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Import -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+
+        <div class="card-header">
+          <i class="bi bi-upload"></i> بازگردانی از فایل پشتیبان
+        </div>
+
+        <div class="card-body">
+
+          {{ form_errors(import_form) }}
+
+          <form method="post" action="{{ url_for('admin.backup_import') }}"
+                enctype="multipart/form-data" novalidate>
+
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+              <label for="{{ import_form.archive.id }}" class="form-label">
+                {{ import_form.archive.label.text }} <span class="text-danger">*</span>
+              </label>
+              {{ import_form.archive(class="form-control", accept=".zip") }}
+              <div class="form-text">حداکثر حجم فایل ۲۰ مگابایت است.</div>
+            </div>
+
+            {{ select(import_form.mode) }}
+
+            <div class="mb-3">
+              <div class="form-label">{{ import_form.tables.label.text }}</div>
+              {% for value, label in import_form.tables.choices %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="tables"
+                       id="tables-{{ value }}" value="{{ value }}"
+                       {% if value in (import_form.tables.data or []) %}checked{% endif %}>
+                <label class="form-check-label" for="tables-{{ value }}">{{ label }}</label>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="form-check mb-3">
+              {{ import_form.confirm_replace(class="form-check-input") }}
+              <label class="form-check-label text-danger" for="{{ import_form.confirm_replace.id }}">
+                {{ import_form.confirm_replace.label.text }}
+              </label>
+              <div class="form-text">فقط برای حالت «جایگزینی» لازم است.</div>
+            </div>
+
+            <button type="submit" class="btn btn-warning">
+              <i class="bi bi-upload"></i> بازگردانی
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

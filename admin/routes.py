@@ -11,6 +11,7 @@ Each view now does one thing: bind a form, hand the validated data to a
 repository, and redirect or re-render.
 """
 
+import io
 import os
 from urllib.parse import urlparse
 
@@ -21,6 +22,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     url_for,
 )
 
@@ -48,13 +50,15 @@ from repositories.project_repository import (
 )
 from repositories.settings_repository import get_settings, update_settings
 
-from . import admin_bp
+from . import admin_bp, backup_service
 from .auth import current_user, login_user, logout_user, verify_credentials
 from .dashboard_service import get_dashboard_stats
 from .decorators import login_required
 from .forms import (
     SKILL_CATEGORY_CHOICES,
     ArticleForm,
+    BackupExportForm,
+    BackupImportForm,
     LoginForm,
     ProjectForm,
     SettingsForm,
@@ -382,3 +386,76 @@ def settings():
             {"value": value, "label": label} for value, label in SKILL_CATEGORY_CHOICES
         ],
     )
+
+
+# --- Backup -----------------------------------------------------------
+
+
+def _resume_path():
+    return os.path.join(current_app.root_path, "myresume.pdf")
+
+
+def _render_backup(export_form=None, import_form=None):
+    return render_template(
+        "admin/backup.html",
+        page_title="Backup",
+        export_form=export_form or BackupExportForm(formdata=None),
+        import_form=import_form or BackupImportForm(formdata=None),
+    )
+
+
+@admin_bp.route("/backup")
+@login_required
+def backup():
+    return _render_backup()
+
+
+@admin_bp.route("/backup/export", methods=["POST"])
+@login_required
+def backup_export():
+
+    form = BackupExportForm()
+
+    if not form.validate_on_submit():
+        return _render_backup(export_form=form)
+
+    payload = backup_service.build_export(
+        current_app.config["UPLOAD_FOLDER"],
+        _resume_path(),
+        include_messages=form.include_messages.data,
+    )
+
+    return send_file(
+        io.BytesIO(payload),
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=backup_service.export_filename(),
+    )
+
+
+@admin_bp.route("/backup/import", methods=["POST"])
+@login_required
+@limiter.limit("5 per minute")
+def backup_import():
+
+    form = BackupImportForm()
+
+    if not form.validate_on_submit():
+        return _render_backup(import_form=form)
+
+    try:
+        counts = backup_service.import_backup(
+            form.archive.data.stream,
+            current_app.config["UPLOAD_FOLDER"],
+            _resume_path(),
+            mode=form.mode.data,
+            tables=form.tables.data,
+        )
+    except backup_service.BackupError as error:
+        flash(str(error), "danger")
+        return _render_backup(import_form=form)
+
+    labels = dict(form.tables.choices)
+    summary = "، ".join(f"{labels[name]}: {count}" for name, count in counts.items())
+    flash(f"بازگردانی با موفقیت انجام شد ({summary}).", "success")
+    return redirect(url_for("admin.backup"))

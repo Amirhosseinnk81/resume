@@ -160,3 +160,38 @@ def update_settings(new_settings):
         delattr(g, _CACHE_KEY)
 
     return get_settings()
+
+
+# --- Backup -----------------------------------------------------------
+
+
+def export_settings():
+    return _read_raw()
+
+
+def import_settings(data, mode="merge"):
+    """Does not commit — see repositories/_backup.py."""
+    if mode == "replace":
+        Setting.query.delete()
+
+    for key, value in data.items():
+        if key not in DEFAULT_SETTINGS:
+            continue
+
+        if key == "skills":
+            value = _normalise_skills(value)
+
+        payload = json.dumps(value, ensure_ascii=False)
+
+        row = db.session.get(Setting, key)
+        if row is None:
+            db.session.add(Setting(key=key, value=payload))
+        else:
+            row.value = payload
+
+    db.session.flush()
+
+    if has_app_context() and hasattr(g, _CACHE_KEY):
+        delattr(g, _CACHE_KEY)
+
+    return len(data)

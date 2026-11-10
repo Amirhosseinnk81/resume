@@ -8,6 +8,8 @@ previous JSON implementation.
 from extensions import db
 from models import Article
 
+from ._backup import get_or_new, iso, restore_timestamps
+
 
 def _apply(article, data):
 
@@ -107,3 +109,46 @@ def count_articles():
 
 def total_article_views():
     return db.session.query(db.func.coalesce(db.func.sum(Article.views), 0)).scalar() or 0
+
+
+# --- Backup -----------------------------------------------------------
+
+
+def export_articles():
+    rows = Article.query.order_by(Article.id).all()
+    exported = []
+    for row in rows:
+        item = row.to_dict()
+        item["created_at"] = iso(row.created_at)
+        item["updated_at"] = iso(row.updated_at)
+        exported.append(item)
+    return exported
+
+
+def import_articles(rows, mode="merge"):
+    """
+    Does not commit — see repositories/_backup.py.
+
+    Returns the stored filenames that are no longer referenced, so the
+    caller can delete those PDFs once the transaction has committed.
+    """
+    stale_files = []
+
+    if mode == "replace":
+        stale_files = [row.file for row in Article.query.all() if row.file]
+        Article.query.delete()
+
+    for item in rows:
+        row = get_or_new(Article, item, mode)
+        previous_file = row.file
+
+        _apply(row, item)
+        if row.views is None:
+            row.views = 0
+        restore_timestamps(row, item)
+
+        if previous_file and previous_file != row.file:
+            stale_files.append(previous_file)
+
+    db.session.flush()
+    return stale_files

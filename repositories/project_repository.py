@@ -9,6 +9,8 @@ and templates were not changed by the migration.
 from extensions import db
 from models import Project
 
+from ._backup import get_or_new, iso, restore_timestamps
+
 # Keys the admin form submits that map onto list columns.
 _LIST_FIELDS = ("technologies", "features")
 
@@ -90,3 +92,30 @@ def delete_project(project_id):
 
 def count_projects():
     return Project.query.count()
+
+
+# --- Backup -----------------------------------------------------------
+
+
+def export_projects():
+    rows = Project.query.order_by(Project.id).all()
+    exported = []
+    for row in rows:
+        item = row.to_dict()
+        item["created_at"] = iso(row.created_at)
+        item["updated_at"] = iso(row.updated_at)
+        exported.append(item)
+    return exported
+
+
+def import_projects(rows, mode="merge"):
+    """Does not commit — see repositories/_backup.py."""
+    if mode == "replace":
+        Project.query.delete()
+
+    for item in rows:
+        row = _apply(get_or_new(Project, item, mode), item)
+        restore_timestamps(row, item)
+
+    db.session.flush()
+    return len(rows)
